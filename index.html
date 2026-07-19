@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KyuAnime - Nonton Anime Streaming Subtitle Indonesia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0b0f19; color: #e2e8f0; }
+        .anime-card:hover img { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
+            
+            <!-- Search Bar -->
+            <div class="relative w-full sm:w-80">
+                <input type="text" id="search-input" placeholder="Cari anime favoritmu..." class="w-full bg-[#1f2937] text-sm text-white pl-4 pr-10 py-2 rounded-full border border-gray-700 focus:outline-none focus:border-purple-500">
+                <button id="search-btn" class="absolute right-3 top-2.5 text-gray-400 hover:text-purple-500">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        
+        <!-- Schedule Days Selector -->
+        <section class="mb-8">
+            <h2 class="text-lg font-bold mb-3 text-purple-400"><i class="fa-solid fa-calendar-days mr-2"></i>Jadwal Rilis</h2>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none text-sm">
+                <button onclick="loadSchedule('monday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 dynamic-active">Senin</button>
+                <button onclick="loadSchedule('tuesday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Selasa</button>
+                <button onclick="loadSchedule('wednesday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Rabu</button>
+                <button onclick="loadSchedule('thursday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Kamis</button>
+                <button onclick="loadSchedule('friday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Jumat</button>
+                <button onclick="loadSchedule('saturday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Sabtu</button>
+                <button onclick="loadSchedule('sunday')" class="day-btn px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Minggu</button>
+            </div>
+        </section>
+
+        <!-- Dynamic Section Title -->
+        <h2 id="section-title" class="text-xl font-extrabold mb-6 border-l-4 border-purple-500 pl-3">Anime Terbaru</h2>
+        
+        <!-- Loading Spinner -->
+        <div id="loading" class="flex justify-center items-center py-20 hidden">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        </div>
+
+        <!-- Anime Grid Grid -->
+        <div id="anime-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <!-- Data dimasukkan via JS -->
+        </div>
+
+        <!-- Pagination (Hanya muncul saat mode 'Terbaru') -->
+        <div id="pagination" class="flex justify-center gap-4 mt-8">
+            <button id="prev-page" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 disabled:opacity-50">Prev</button>
+            <span id="page-num" class="self-center font-bold text-purple-400">Page 1</span>
+            <button id="next-page" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600">Next</button>
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script>
+        let currentPage = 1;
+        const container = document.getElementById('anime-container');
+        const loading = document.getElementById('loading');
+        const sectionTitle = document.getElementById('section-title');
+        const pagination = document.getElementById('pagination');
+
+        async function fetchAnime(url) {
+            loading.classList.remove('hidden');
+            container.innerHTML = '';
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                loading.classList.add('hidden');
+                return data.result || data || [];
+            } catch (err) {
+                loading.classList.add('hidden');
+                container.innerHTML = `<p class="text-red-500 col-span-full text-center">Gagal memuat data. Coba lagi nanti.</p>`;
+                return [];
+            }
+        }
+
+        async function loadTerbaru(page = 1) {
+            pagination.classList.remove('hidden');
+            sectionTitle.innerText = "Anime Terbaru";
+            const items = await fetchAnime(`${CONFIG.API_BASE}/terbaru.php?page=${page}`);
+            renderCards(items, true); // true karena data terbaru biasanya punya info episode terupdate
+        }
+
+        async function loadSchedule(day) {
+            pagination.classList.add('hidden');
+            sectionTitle.innerText = `Jadwal Rilis: ${day.toUpperCase()}`;
+            const items = await fetchAnime(`${CONFIG.API_BASE}/schedule.php?day=${day}&perpage=20`);
+            renderCards(items);
+        }
+
+        async function searchAnime(query) {
+            pagination.classList.add('hidden');
+            sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
+            const items = await fetchAnime(`${CONFIG.API_BASE}/search.php?q=${encodeURIComponent(query)}`);
+            renderCards(items);
+        }
+
+        function renderCards(items, isTerbaru = false) {
+            if(!items || items.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 col-span-full text-center">Tidak ada anime ditemukan.</p>`;
+                return;
+            }
+            container.innerHTML = items.map(anime => {
+                // Handle perbedaan key dari bermacam endpoint API Samehadaku
+                const title = anime.title || anime.name;
+                const img = anime.image || anime.thumb;
+                const targetUrl = anime.url; 
+                
+                // Menentukan link tujuan (jika terbaru langsung ke watch page, jika list/search ke detail page)
+                const href = isTerbaru ? `watch.html?episodeUrl=${encodeURIComponent(targetUrl)}` : `detail.html?animeUrl=${encodeURIComponent(targetUrl)}`;
+
+                return `
+                    <a href="${href}" class="anime-card bg-[#111827] rounded-lg overflow-hidden border border-gray-800 flex flex-col group">
+                        <div class="relative overflow-hidden aspect-[3/4]">
+                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-300">
+                            ${anime.type ? `<span class="absolute top-2 left-2 bg-purple-600 text-[10px] font-bold px-2 py-0.5 rounded">${anime.type}</span>` : ''}
+                            ${anime.episode ? `<span class="absolute bottom-2 right-2 bg-black/80 text-[11px] px-2 py-0.5 rounded text-purple-400 font-semibold">Ep ${anime.episode}</span>` : ''}
+                        </div>
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <h3 class="text-sm font-bold line-clamp-2 group-hover:text-purple-400 transition">${title}</h3>
+                            ${anime.status ? `<p class="text-[11px] text-gray-400 mt-1">${anime.status}</p>` : ''}
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        // Event Listeners
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const q = document.getElementById('search-input').value;
+            if(q.trim()) searchAnime(q);
+        });
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter' && e.target.value.trim()) searchAnime(e.target.value);
+        });
+
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if(currentPage > 1) {
+                currentPage--;
+                document.getElementById('page-num').innerText = `Page ${currentPage}`;
+                loadTerbaru(currentPage);
+            }
+        });
+        document.getElementById('next-page').addEventListener('click', () => {
+            currentPage++;
+            document.getElementById('page-num').innerText = `Page ${currentPage}`;
+            loadTerbaru(currentPage);
+        });
+
+        // Init
+        loadTerbaru();
+    </script>
+</body>
+</html>
