@@ -3,7 +3,7 @@ const CONFIG = {
     API_BASE: "https://api-nanas.my.id/api/nonton/samehadaku",
 
     // BACKGROUND PREMIUM WEBSITE
-    BG_URL: "https://files.catbox.moe/rijuxb.jpg",
+    DEFAULT_BACKGROUND: "https://files.catbox.moe/rijuxb.jpg",
 
     // KREDENSIAL DATABASE SUPABASE
     SUPABASE_URL: "https://pwrpciqxbpqyjqtmgiiv.supabase.co",

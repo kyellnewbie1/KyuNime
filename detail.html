@@ -6,6 +6,7 @@
     <title>Detail Anime - KyuAnime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-up { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -14,7 +15,7 @@
         .ep-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(4px); transition: all 0.3s ease; }
         .ep-card:hover { transform: translateX(10px); background: rgba(147, 51, 234, 0.2); border-color: rgba(168, 85, 247, 0.5); }
         
-        body { background-color: #050505; color: #e2e8f0; }
+        body { background-color: #050505; color: #e2e8f0; background-size: cover; background-position: center; background-attachment: fixed; }
         #bg-blur { position: fixed; inset: 0; z-index: -1; filter: blur(30px) brightness(0.3); transform: scale(1.1); background-size: cover; background-position: center; transition: background-image 1s ease; }
     </style>
 </head>
@@ -74,7 +75,23 @@
         const urlParams = new URLSearchParams(window.location.search);
         const animeUrl = urlParams.get('animeUrl');
 
+        // Fungsi Memuat Background Kustom / Default Halaman
+        async function applyDynamicBackground() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabaseClient.from('profiles').select('background_url').eq('id', session.user.id).single();
+                if (profile && profile.background_url && profile.background_url.trim() !== "") {
+                    document.body.style.backgroundImage = `url('${profile.background_url}')`;
+                    return;
+                }
+            }
+            if (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_BACKGROUND) {
+                document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
+            }
+        }
+
         async function loadDetail() {
+            await applyDynamicBackground();
             if(!animeUrl) return document.getElementById('loading').innerHTML = '<p class="text-red-500">URL tidak valid!</p>';
             
             try {
@@ -87,35 +104,42 @@
                 document.getElementById('loading').remove();
                 document.getElementById('content').classList.remove('hidden');
 
-                // Set Dynamic Background & Image
-                document.getElementById('bg-blur').style.backgroundImage = `url('${info.image}')`;
-                document.getElementById('anime-img').src = info.image;
+                // Jika user memiliki kustom background, pakai kustom background. Jika tidak, pakai background anime.
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                let hasCustomBg = false;
+                if (session) {
+                    const { data: p } = await supabaseClient.from('profiles').select('background_url').eq('id', session.user.id).single();
+                    if(p && p.background_url && p.background_url.trim() !== "") hasCustomBg = true;
+                }
                 
-                // Set Texts
+                if (!hasCustomBg) {
+                    document.getElementById('bg-blur').style.backgroundImage = `url('${info.image}')`;
+                } else {
+                    document.getElementById('bg-blur').style.display = 'none';
+                }
+                
+                document.getElementById('anime-img').src = info.image;
                 document.getElementById('anime-title').innerText = info.title;
                 document.getElementById('anime-status').innerText = info.status;
                 document.getElementById('anime-type').innerText = info.type || '-';
                 document.getElementById('anime-studio').innerText = info.studio || '-';
                 document.getElementById('anime-released').innerText = info.released || '-';
                 
-                // Proteksi Optional Chaining (?.) agar tidak crash jika property episodes kosong
                 const totalEp = info.episodes ? info.episodes.length : 0;
                 document.getElementById('anime-total-ep').innerText = totalEp + " Ep";
                 document.getElementById('anime-synopsis').innerText = info.synopsis || "Sinopsis tidak tersedia.";
 
-                // Genres (Gradient Badges)
                 const genres = info.genres || [];
                 document.getElementById('anime-genres').innerHTML = genres.map(g => 
                     `<span class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-white/20">${g}</span>`
                 ).join('');
 
-                // Render Episodes (Staggered Animation) dengan validasi array kosong
                 const episodes = info.episodes || [];
                 if(episodes.length === 0) {
                     document.getElementById('episode-list').innerHTML = '<p class="col-span-full text-center text-gray-500 py-6">Belum ada episode yang dirilis.</p>';
                 } else {
                     document.getElementById('episode-list').innerHTML = episodes.map((ep, index) => {
-                        const delay = index * 30; // Animasi bertingkat
+                        const delay = index * 30;
                         return `
                         <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="ep-card block p-4 rounded-2xl border border-gray-700/50 group relative overflow-hidden" style="animation: slideUp 0.5s ease forwards; animation-delay: ${delay}ms; opacity: 0;">
                             <div class="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/10 to-transparent -translate-x-full group-hover:translate-x-full transition duration-700"></div>

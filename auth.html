@@ -8,12 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #050505; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body { background-color: #050505; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
         /* Background Blur Mewah */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: url('https://files.catbox.moe/rijuxb.jpg') no-repeat center center;
-            background-size: cover; filter: blur(12px) brightness(0.3); transform: scale(1.1); z-index: -1;
+            background: inherit; filter: blur(12px) brightness(0.3); transform: scale(1.1); z-index: -1;
         }
         .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -64,7 +63,6 @@
 
     <script src="config.js"></script>
     <script>
-        // PERBAIKAN: Gunakan nama supabaseClient
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
         let isLogin = true;
@@ -74,7 +72,22 @@
         const subtitle = document.getElementById('form-subtitle');
         const msgBox = document.getElementById('msg-box');
 
-        // Fungsi menampilkan pesan sukses/gagal yang elegan
+        // Fungsi Memuat Background Kustom / Default
+        async function applyDynamicBackground() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabaseClient.from('profiles').select('background_url').eq('id', session.user.id).single();
+                if (profile && profile.background_url && profile.background_url.trim() !== "") {
+                    document.body.style.backgroundImage = `url('${profile.background_url}')`;
+                    return;
+                }
+            }
+            if (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_BACKGROUND) {
+                document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', applyDynamicBackground);
+
         function showMessage(msg, isError = false) {
             msgBox.innerText = msg;
             msgBox.className = `text-center text-sm font-bold mt-5 p-3 rounded-xl block ${isError ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-green-500/20 text-green-400 border border-green-500/30'}`;
@@ -116,7 +129,7 @@
                     if(isLogin) {
                         setTimeout(() => window.location.href = 'index.html', 1500);
                     } else {
-                        setTimeout(() => toggleBtn.click(), 2000); // Otomatis pindah ke mode login
+                        setTimeout(() => toggleBtn.click(), 2000);
                     }
                 }
             } catch (err) {
