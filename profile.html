@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #0b0f19; color: #e2e8f0; }
+        body { background-color: #0b0f19; color: #e2e8f0; background-size: cover; background-position: center; background-attachment: fixed; transition: background 0.5s ease; }
         .role-owner {
             background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -44,29 +44,22 @@
     <main class="max-w-5xl mx-auto px-4 py-10">
         
         <div class="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden mb-8">
-            <!-- Banner Utama dengan Fitur Ubah Banner (group hover) -->
-            <div id="profile-banner" class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black z-0 border-b border-gray-800 bg-cover bg-center transition-all duration-300 group">
-                <label for="banner-upload" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <span class="text-white text-xs font-bold bg-purple-600/80 px-3 py-1.5 rounded-xl border border-white/20 shadow-lg">
-                        <i class="fa-solid fa-camera mr-1"></i> Ubah Banner
-                    </span>
-                    <input type="file" id="banner-upload" accept="image/*" class="hidden">
-                </label>
-            </div>
+            <!-- Banner Utama -->
+            <div id="profile-banner" class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black z-0 border-b border-gray-800 bg-cover bg-center transition-all duration-300"></div>
             
             <div class="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6 mt-10">
-                <div class="relative group cursor-pointer">
+                <div class="relative">
                     <img id="profile-img" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border-4 border-[#0b0f19] object-cover bg-gray-800 shadow-xl transition">
-                    <label for="avatar-upload" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                        <i class="fa-solid fa-camera text-2xl text-white"></i>
-                    </label>
-                    <input type="file" id="avatar-upload" accept="image/*" class="hidden">
                 </div>
 
                 <div class="text-center md:text-left flex-1 mb-2 w-full">
                     <div class="flex items-center justify-center md:justify-start gap-3">
                         <h1 id="profile-name" class="text-3xl font-black text-white">Memuat...</h1>
                         <span id="profile-id" class="bg-purple-900/50 border border-purple-500/30 px-2 py-1 rounded text-xs text-purple-300 font-mono font-bold shadow-inner">#--</span>
+                        <!-- TOMBOL TRIGGER UTK EDIT KUSTOMISASI PROFIL VIA URL -->
+                        <button onclick="openEditModal()" class="bg-gray-800 hover:bg-purple-600 border border-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl transition shadow-lg flex items-center gap-1" title="Edit Kustom Profil">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </button>
                     </div>
                     <p class="mt-1 text-sm uppercase tracking-widest mb-4"><span id="profile-role"></span></p>
                     
@@ -124,6 +117,39 @@
         </div>
     </main>
 
+    <!-- MODAL EDIT CUSTOM PROFIL (NAMA & URL URL RESOURCE) -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-md px-4 transition-opacity">
+        <div class="glass-panel rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 bg-[#0b0f19] p-6">
+            <h3 class="text-xl font-black text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-gear text-purple-500"></i> Kustomisasi Profil
+            </h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Nama Tampilan</label>
+                    <input type="text" id="edit-name" class="w-full bg-black/40 text-sm text-white px-3 py-2 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Avatar / Foto Profil</label>
+                    <input type="url" id="edit-avatar-url" placeholder="https://domain.com/avatar.png" class="w-full bg-black/40 text-xs text-white px-3 py-2 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Banner Atas</label>
+                    <input type="url" id="edit-banner-url" placeholder="https://domain.com/banner.jpg" class="w-full bg-black/40 text-xs text-white px-3 py-2 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Background Halaman</label>
+                    <input type="url" id="edit-background-url" placeholder="Kosongkan jika ingin pakai default config.js" class="w-full bg-black/40 text-xs text-white px-3 py-2 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono">
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeEditModal()" class="w-1/2 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-xl transition text-sm">Batal</button>
+                <button onclick="saveProfileChanges()" class="w-1/2 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition text-sm shadow-lg shadow-purple-600/20">Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
     <script>
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
@@ -144,15 +170,24 @@ async function loadProfile() {
         document.getElementById('display-level').innerText = `Level ${profile.level}`;
         document.getElementById('display-exp').innerText = profile.exp;
         
-        // --- LOGIKA MEMUAT BANNER KUSTOM ---
+        // --- FITUR BACKGROUND PER AKUN / DEFAULT VIA CONFIG.JS ---
+        if (profile.background_url && profile.background_url.trim() !== "") {
+            document.body.style.backgroundImage = `url('${profile.background_url}')`;
+        } else if (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_BACKGROUND) {
+            document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
+        }
+        
+        // --- MEMUAT BANNER KUSTOM ---
         const bannerEl = document.getElementById('profile-banner');
-        if (profile.banner_url) {
+        if (profile.banner_url && profile.banner_url.trim() !== "") {
             bannerEl.style.backgroundImage = `url('${profile.banner_url}')`;
-            bannerEl.className = bannerEl.className.replace(/bg-gradient-to-r|from-purple-9050|via-gray-900|to-black/g, '');
+            bannerEl.className = bannerEl.className.replace(/bg-gradient-to-r|from-purple-900\/50|via-gray-900|to-black/g, '');
         } else {
             bannerEl.style.backgroundImage = '';
+            if(!bannerEl.className.includes('bg-gradient-to-r')) {
+                bannerEl.className += ' bg-gradient-to-r from-purple-900/50 via-gray-900 to-black';
+            }
         }
-        // ----------------------------------
 
         const date = new Date(profile.created_at);
         document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
@@ -170,6 +205,50 @@ async function loadProfile() {
         }
 
         loadFriends();
+    }
+}
+
+// Buka Modal Edit Kustom Profil & isi nilainya
+async function openEditModal() {
+    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (profile) {
+        document.getElementById('edit-name').value = profile.full_name || '';
+        document.getElementById('edit-avatar-url').value = profile.avatar_url || '';
+        document.getElementById('edit-banner-url').value = profile.banner_url || '';
+        document.getElementById('edit-background-url').value = profile.background_url || '';
+        document.getElementById('edit-profile-modal').classList.remove('hidden');
+    }
+}
+
+function closeEditModal() {
+    document.getElementById('edit-profile-modal').classList.add('hidden');
+}
+
+// Menyimpan seluruh perubahan data kustom via URL sekaligus
+async function saveProfileChanges() {
+    const nameInput = document.getElementById('edit-name').value.trim();
+    const avatarInput = document.getElementById('edit-avatar-url').value.trim();
+    const bannerInput = document.getElementById('edit-banner-url').value.trim();
+    const backgroundInput = document.getElementById('edit-background-url').value.trim();
+
+    if(!nameInput) return alert("Nama tidak boleh kosong!");
+
+    const { error } = await supabaseClient
+        .from('profiles')
+        .update({
+            full_name: nameInput,
+            avatar_url: avatarInput,
+            banner_url: bannerInput,
+            background_url: backgroundInput
+        })
+        .eq('id', currentUser.id);
+
+    if(error) {
+        alert("Gagal memperbarui profil: " + error.message);
+    } else {
+        alert("Profil berhasil diperbarui secara instan!");
+        closeEditModal();
+        loadProfile();
     }
 }
 
@@ -232,8 +311,8 @@ async function loadFriends() {
         .from('friends')
         .select(`
             id, status, requester_id, receiver_id,
-            requester:profiles!friends_requester_id_fkey(id, full_name, user_id, avatar_url, banner_url, level, exp, role),
-            receiver:profiles!friends_receiver_id_fkey(id, full_name, user_id, avatar_url, banner_url, level, exp, role)
+            requester:profiles!friends_requester_id_fkey(id, full_name, user_id, avatar_url, banner_url, background_url, level, exp, role),
+            receiver:profiles!friends_receiver_id_fkey(id, full_name, user_id, avatar_url, banner_url, background_url, level, exp, role)
         `)
         .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
 
@@ -332,7 +411,7 @@ async function openProfileModal(userId) {
         modalContainer.innerHTML = `
             <div class="glass-panel rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border border-white/10 bg-[#0b0f19]">
                 <!-- Banner di dalam modal milik orang lain -->
-                <div id="modal-banner" class="h-24 bg-gradient-to-r from-purple-800 to-blue-900 opacity-80 bg-cover bg-center"></div>
+                <div id="modal-banner" class="h-24 bg-cover bg-center opacity-80"></div>
                 <div class="px-6 pb-8 relative -mt-12 text-center">
                     <img id="modal-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#0b0f19] mx-auto object-cover bg-gray-900 mb-3 shadow-xl">
                     <h3 id="modal-name" class="text-xl font-black text-white"></h3>
@@ -357,7 +436,7 @@ async function openProfileModal(userId) {
 
     // Mengatur banner orang lain di modal
     const modalBanner = document.getElementById('modal-banner');
-    if (data.banner_url) {
+    if (data.banner_url && data.banner_url.trim() !== "") {
         modalBanner.style.backgroundImage = `url('${data.banner_url}')`;
         modalBanner.className = "h-24 bg-cover bg-center opacity-80";
     } else {
@@ -394,54 +473,6 @@ async function logout() {
     await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 }
-
-// Fitur Ganti Avatar (Otomatis ke Base64)
-document.getElementById('avatar-upload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) return alert("Ukuran gambar maksimal 2MB.");
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-        const base64String = reader.result;
-        document.getElementById('profile-img').src = base64String;
-
-        const { error } = await supabaseClient.from('profiles').update({ avatar_url: base64String }).eq('id', currentUser.id);
-
-        if (error) alert("Gagal update avatar: " + error.message);
-        else loadProfile(); 
-    };
-    reader.readAsDataURL(file);
-});
-
-// Fitur Ganti Banner Utama (Otomatis ke Base64)
-document.getElementById('banner-upload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Pembatasan ukuran file banner (Maksimal 3MB)
-    if (file.size > 3 * 1024 * 1024) return alert("Ukuran gambar maksimal 3MB.");
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-        const base64String = reader.result;
-        
-        const bannerEl = document.getElementById('profile-banner');
-        bannerEl.style.backgroundImage = `url('${base64String}')`;
-        bannerEl.className = bannerEl.className.replace(/bg-gradient-to-r|from-purple-9050|via-gray-900|to-black/g, '');
-
-        const { error } = await supabaseClient.from('profiles').update({ banner_url: base64String }).eq('id', currentUser.id);
-
-        if (error) {
-            alert("Gagal update banner: " + error.message);
-        } else {
-            alert("Banner berhasil diperbarui!");
-            loadProfile(); 
-        }
-    };
-    reader.readAsDataURL(file);
-});
 
 loadProfile();
     </script>
