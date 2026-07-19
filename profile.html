@@ -44,7 +44,15 @@
     <main class="max-w-5xl mx-auto px-4 py-10">
         
         <div class="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden mb-8">
-            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black z-0 border-b border-gray-800"></div>
+            <!-- Banner Utama dengan Fitur Ubah Banner (group hover) -->
+            <div id="profile-banner" class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black z-0 border-b border-gray-800 bg-cover bg-center transition-all duration-300 group">
+                <label for="banner-upload" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <span class="text-white text-xs font-bold bg-purple-600/80 px-3 py-1.5 rounded-xl border border-white/20 shadow-lg">
+                        <i class="fa-solid fa-camera mr-1"></i> Ubah Banner
+                    </span>
+                    <input type="file" id="banner-upload" accept="image/*" class="hidden">
+                </label>
+            </div>
             
             <div class="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6 mt-10">
                 <div class="relative group cursor-pointer">
@@ -136,6 +144,16 @@ async function loadProfile() {
         document.getElementById('display-level').innerText = `Level ${profile.level}`;
         document.getElementById('display-exp').innerText = profile.exp;
         
+        // --- LOGIKA MEMUAT BANNER KUSTOM ---
+        const bannerEl = document.getElementById('profile-banner');
+        if (profile.banner_url) {
+            bannerEl.style.backgroundImage = `url('${profile.banner_url}')`;
+            bannerEl.className = bannerEl.className.replace(/bg-gradient-to-r|from-purple-9050|via-gray-900|to-black/g, '');
+        } else {
+            bannerEl.style.backgroundImage = '';
+        }
+        // ----------------------------------
+
         const date = new Date(profile.created_at);
         document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
 
@@ -214,8 +232,8 @@ async function loadFriends() {
         .from('friends')
         .select(`
             id, status, requester_id, receiver_id,
-            requester:profiles!friends_requester_id_fkey(id, full_name, user_id, avatar_url, level, exp, role),
-            receiver:profiles!friends_receiver_id_fkey(id, full_name, user_id, avatar_url, level, exp, role)
+            requester:profiles!friends_requester_id_fkey(id, full_name, user_id, avatar_url, banner_url, level, exp, role),
+            receiver:profiles!friends_receiver_id_fkey(id, full_name, user_id, avatar_url, banner_url, level, exp, role)
         `)
         .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
 
@@ -272,7 +290,6 @@ async function loadFriends() {
 function updateTotalTeman(total) {
     let totalTemanEl = document.getElementById('stat-total-teman');
     if (!totalTemanEl) {
-        // Cari container Statistik Akun ul
         const statUl = document.querySelector('.glass-panel h3 i.text-green-500').parentElement.nextElementSibling;
         const li = document.createElement('li');
         li.className = "flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/5";
@@ -307,16 +324,15 @@ async function openProfileModal(userId) {
     const { data } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
     if(!data) return;
 
-    // Pastikan element modal ter-render di DOM html kamu (bisa salin struktur modal milik watch.html ke profile.html bagian bawah)
     let modal = document.getElementById('public-profile-modal');
     if(!modal) {
-        // Otomatis inject modal jika belum dipasang di HTML profile
         const modalContainer = document.createElement('div');
         modalContainer.id = 'public-profile-modal';
         modalContainer.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-md px-4 transition-opacity';
         modalContainer.innerHTML = `
             <div class="glass-panel rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border border-white/10 bg-[#0b0f19]">
-                <div class="h-24 bg-gradient-to-r from-purple-800 to-blue-900 opacity-80"></div>
+                <!-- Banner di dalam modal milik orang lain -->
+                <div id="modal-banner" class="h-24 bg-gradient-to-r from-purple-800 to-blue-900 opacity-80 bg-cover bg-center"></div>
                 <div class="px-6 pb-8 relative -mt-12 text-center">
                     <img id="modal-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#0b0f19] mx-auto object-cover bg-gray-900 mb-3 shadow-xl">
                     <h3 id="modal-name" class="text-xl font-black text-white"></h3>
@@ -337,6 +353,16 @@ async function openProfileModal(userId) {
             </div>`;
         document.body.appendChild(modalContainer);
         modal = document.getElementById('public-profile-modal');
+    }
+
+    // Mengatur banner orang lain di modal
+    const modalBanner = document.getElementById('modal-banner');
+    if (data.banner_url) {
+        modalBanner.style.backgroundImage = `url('${data.banner_url}')`;
+        modalBanner.className = "h-24 bg-cover bg-center opacity-80";
+    } else {
+        modalBanner.style.backgroundImage = '';
+        modalBanner.className = "h-24 bg-gradient-to-r from-purple-800 to-blue-900 opacity-80 bg-cover bg-center";
     }
 
     document.getElementById('modal-avatar').src = data.avatar_url || 'https://via.placeholder.com/150';
@@ -389,8 +415,35 @@ document.getElementById('avatar-upload').addEventListener('change', async (e) =>
     reader.readAsDataURL(file);
 });
 
-loadProfile();
+// Fitur Ganti Banner Utama (Otomatis ke Base64)
+document.getElementById('banner-upload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    // Pembatasan ukuran file banner (Maksimal 3MB)
+    if (file.size > 3 * 1024 * 1024) return alert("Ukuran gambar maksimal 3MB.");
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        const base64String = reader.result;
+        
+        const bannerEl = document.getElementById('profile-banner');
+        bannerEl.style.backgroundImage = `url('${base64String}')`;
+        bannerEl.className = bannerEl.className.replace(/bg-gradient-to-r|from-purple-9050|via-gray-900|to-black/g, '');
+
+        const { error } = await supabaseClient.from('profiles').update({ banner_url: base64String }).eq('id', currentUser.id);
+
+        if (error) {
+            alert("Gagal update banner: " + error.message);
+        } else {
+            alert("Banner berhasil diperbarui!");
+            loadProfile(); 
+        }
+    };
+    reader.readAsDataURL(file);
+});
+
+loadProfile();
     </script>
 </body>
 </html>
