@@ -3,281 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streaming Player & Download - KyuNimeID</title>
+    <title>Nonton Anime - KyuAnime</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .role-owner {
+            background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rgb-text 3s ease infinite;
+            font-weight: 900;
+        }
+        @keyframes rgb-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    </style>
 </head>
-<body id="dynamic-bg" class="bg-[#0b0f19] text-gray-200 min-h-screen bg-fixed bg-cover bg-center">
-    <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 to-[#0b0f19] -z-10"></div>
+<body class="bg-[#0b0f19] text-gray-200">
 
-    <!-- NAVBAR -->
-    <nav class="bg-[#111827]/80 backdrop-blur-md border-b border-gray-800/80 px-4 py-3 sticky top-0 z-50">
+    <nav class="bg-[#111827]/90 border-b border-gray-800 px-4 py-3">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">NimeID</span></a>
-            <a href="index.html" class="text-xs bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-700 text-gray-300 hover:text-white transition"><i class="fa-solid fa-arrow-left mr-1"></i> Kembali</a>
+            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
+            <div id="user-nav-area"></div>
         </div>
     </nav>
 
-    <!-- MAIN APP CONTAINER -->
-    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <h1 id="episode-title" class="text-lg font-black text-white flex items-center gap-2">
-            <div class="animate-pulse bg-gray-700 h-5 w-48 rounded"></div>
-        </h1>
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <h1 id="episode-title" class="text-xl font-bold mb-4 text-white">Memuat Halaman Nonton...</h1>
 
-        <!-- HD Video Stream Box -->
-        <div class="relative bg-black rounded-2xl overflow-hidden aspect-video border border-gray-800 shadow-2xl group">
-            <div id="player-loading" class="absolute inset-0 flex flex-col justify-center items-center bg-gray-950 z-10 gap-3">
-                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
-                <p class="text-xs text-gray-400 font-medium">Menghubungkan ke Server Video...</p>
-            </div>
-            <!-- ditambahkan sandbox & allow-scripts agar bypass proteksi web mobile -->
-            <iframe id="video-player" src="" class="w-full h-full absolute inset-0 hidden" allowfullscreen frameborder="0" scrolling="no" allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+        <div class="relative bg-black rounded-2xl overflow-hidden aspect-video border border-gray-800 shadow-2xl mb-4">
+            <iframe id="video-player" src="" class="w-full h-full absolute inset-0" allowfullscreen frameborder="0"></iframe>
         </div>
 
-        <!-- Servers Selector -->
-        <div class="bg-[#111827]/40 backdrop-blur-md p-4 rounded-2xl border border-gray-800/60">
-            <p class="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-2.5"><i class="fa-solid fa-server mr-1"></i> Ganti Server Player:</p>
-            <div id="server-list" class="flex flex-wrap gap-2">
-                <p class="text-xs text-gray-500 italic">Memuat daftar server...</p>
+        <!-- Sistem Klaim EXP -->
+        <div id="exp-banner" class="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-xl p-4 flex justify-between items-center mb-8 hidden">
+            <div>
+                <h3 class="font-bold text-white"><i class="fa-solid fa-gift text-yellow-400 mr-2"></i>Hadiah Menonton</h3>
+                <p class="text-xs text-gray-400" id="exp-status">Tonton anime ini selama beberapa saat untuk mendapatkan EXP.</p>
             </div>
+            <button id="claim-exp-btn" disabled class="bg-gray-700 text-gray-400 font-bold py-2 px-4 rounded-lg cursor-not-allowed transition">
+                Tunggu...
+            </button>
         </div>
 
-        <!-- Links Download -->
-        <div class="bg-[#111827]/20 rounded-2xl p-4 border border-gray-800/60">
-            <h2 class="text-sm font-bold uppercase tracking-wider mb-4 text-purple-400"><i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Opsi Download File</h2>
-            <div id="download-box" class="space-y-3">
-                <p class="text-xs text-gray-500 italic">Memuat tautan unduhan...</p>
-            </div>
+        <!-- Komentar Section -->
+        <h2 class="text-lg font-bold mb-4 border-l-4 border-purple-500 pl-3"><i class="fa-solid fa-comments mr-2"></i>Komentar</h2>
+        
+        <div class="bg-[#111827]/60 p-4 rounded-xl border border-gray-800 mb-6">
+            <textarea id="comment-input" rows="3" class="w-full bg-[#1f2937]/80 text-sm text-white p-3 rounded-lg border border-gray-700 focus:outline-none focus:border-purple-500 mb-2" placeholder="Tulis komentar atau diskusi anime ini..."></textarea>
+            <button id="post-comment-btn" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-6 rounded-lg transition">Kirim Komentar</button>
         </div>
 
-        <!-- FITUR KOMENTAR KOMUNITAS (SUPABASE INTEGRATED) -->
-        <section class="bg-[#111827]/40 border border-gray-800/80 rounded-2xl p-5 backdrop-blur-md space-y-4">
-            <h3 class="text-sm font-black uppercase tracking-wider text-gray-300"><i class="fa-regular fa-comments text-purple-400 mr-1.5"></i> Diskusi Penggemar</h3>
-            
-            <!-- Box Kirim Komentar -->
-            <div id="comment-auth-wrapper">
-                <p class="text-xs text-gray-500 text-center py-2 bg-gray-900/30 rounded-xl border border-gray-800">Silakan <a href="profile.html" class="text-purple-400 font-bold hover:underline">Login</a> terlebih dahulu untuk mengirim komentar.</p>
-            </div>
-
-            <!-- List Komentar Render -->
-            <div id="comments-container" class="space-y-3 divide-y divide-gray-800/40 pt-2">
-                <p class="text-xs text-gray-500 text-center py-6">Belum ada komentar di episode ini. Jadilah yang pertama!</p>
-            </div>
-        </section>
+        <div id="comments-list" class="space-y-4 mb-10"></div>
     </main>
 
+    <!-- Modal Profil Publik -->
+    <div id="public-profile-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-sm px-4">
+        <div class="bg-[#111827] rounded-2xl border border-gray-700 w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="h-20 bg-gradient-to-r from-purple-800 to-black"></div>
+            <div class="px-6 pb-6 relative -mt-10 text-center">
+                <img id="modal-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#111827] mx-auto object-cover bg-gray-800 mb-3">
+                <h3 id="modal-name" class="text-xl font-black text-white"></h3>
+                <p class="text-xs text-gray-400 mb-1 font-mono">ID: <span id="modal-id"></span></p>
+                <p class="text-sm font-bold mb-4 uppercase tracking-widest" id="modal-role"></p>
+                
+                <div class="flex justify-center gap-4 mb-6">
+                    <div class="bg-[#1f2937] px-4 py-2 rounded-lg border border-gray-700">
+                        <span class="block text-xs text-gray-400">Level</span>
+                        <span id="modal-level" class="text-lg font-bold text-purple-400"></span>
+                    </div>
+                    <div class="bg-[#1f2937] px-4 py-2 rounded-lg border border-gray-700">
+                        <span class="block text-xs text-gray-400">Total EXP</span>
+                        <span id="modal-exp" class="text-lg font-bold text-green-400"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="add-friend-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition text-sm">
+                        <i class="fa-solid fa-user-plus mr-2"></i>Tambah Teman
+                    </button>
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition text-sm">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
+    <script src="auth.js"></script>
     <script>
-        document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
-        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        
         const urlParams = new URLSearchParams(window.location.search);
         const episodeUrl = urlParams.get('episodeUrl');
+        const slug = episodeUrl ? episodeUrl.replace(/\/$/, '').split('/').pop() : 'unknown';
+        const supabaseUrl = CONFIG.SUPABASE_URL;
+        const supabaseKey = CONFIG.SUPABASE_ANON_KEY;
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         
-        // Pemotongan slug adaptif untuk memilah query (?page dsb) maupun path bersih
-        let slug = '';
-        if (episodeUrl) {
-            try {
-                const cleanPath = episodeUrl.split('?')[0].replace(/\/$/, '');
-                slug = cleanPath.substring(cleanPath.lastIndexOf('/') + 1);
-            } catch (e) {
-                slug = '';
-            }
-        }
+        let currentUserData = null;
+        let selectedUserId = null;
 
-        let userProfile = null;
-
-        async function initWatchPage() {
-            if(!episodeUrl) {
-                document.getElementById('episode-title').innerText = "URL Episode Tidak Ditemukan!";
-                document.getElementById('player-loading').innerHTML = `<p class="text-xs text-red-400">Silakan kembali ke beranda dan pilih episode terlebih dahulu.</p>`;
-                return;
-            }
-
-            // Load Supabase User
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if(user) {
-                const { data: prof } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-                if(prof) {
-                    userProfile = prof;
-                    renderCommentBox();
-                    triggerXpReward(prof); 
-                }
+        async function initPage() {
+            // Cek Auth untuk fitur EXP & Komen
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if(session) {
+                const { data } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+                currentUserData = data;
+                setupExpSystem();
             }
 
             loadComments();
-
-            // Fetch Media links & Download data
-            try {
-                const res = await fetch(`https://api-nanas.my.id/api/nonton/samehadaku/download.php?url=${encodeURIComponent(episodeUrl)}`);
-                const dl = await res.json();
-                
-                if(!dl.status || !dl.result) {
-                    document.getElementById('episode-title').innerText = "Gagal memuat detail episode.";
-                    document.getElementById('player-loading').innerHTML = `<p class="text-xs text-amber-400">Gagal memproses data API Samehadaku.</p>`;
-                    return;
-                }
-
-                document.getElementById('episode-title').innerText = dl.result.title || 'Streaming Anime';
-
-                // Servers Player Button Render
-                const srvBox = document.getElementById('server-list');
-                srvBox.innerHTML = ''; 
-
-                if (dl.result.servers && dl.result.servers.length > 0) {
-                    dl.result.servers.forEach((s, idx) => {
-                        const b = document.createElement('button');
-                        b.id = `srv-btn-${s.id}`;
-                        b.className = "srv-buttons px-3 py-1.5 bg-[#1f2937]/50 text-[11px] font-bold rounded-xl border border-gray-800 hover:bg-purple-600 transition text-white";
-                        b.innerText = s.name;
-                        b.onclick = () => switchStream(s.id);
-                        srvBox.appendChild(b);
-                    });
-                    // Jalankan server pertama otomatis secara default
-                    switchStream(dl.result.servers[0].id);
-                } else {
-                    srvBox.innerHTML = `<p class="text-xs text-gray-500 italic">Tidak ada server streaming tersedia.</p>`;
-                    document.getElementById('player-loading').innerHTML = `<p class="text-xs text-amber-400">Gunakan link download di bawah jika player tidak tersedia.</p>`;
-                }
-
-                // Downloads Render
-                if (dl.result.downloads && dl.result.downloads.length > 0) {
-                    document.getElementById('download-box').innerHTML = dl.result.downloads.map(fmt => {
-                        if (!fmt || !fmt.qualities) return '';
-                        return `
-                            <div class="bg-[#111827]/60 p-3 rounded-xl border border-gray-800/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                <span class="text-xs font-black text-purple-400 uppercase tracking-widest">${fmt.format || 'MKV/MP4'}</span>
-                                <div class="flex flex-col gap-2 w-full md:w-auto">
-                                    ${fmt.qualities.map(q => {
-                                        if(!q || !q.links) return '';
-                                        return `
-                                            <div class="flex items-center justify-between sm:justify-end gap-3 text-[11px]">
-                                                <span class="text-gray-400 font-medium">${q.quality || 'Unknown'}</span>
-                                                <div class="flex flex-wrap gap-1">
-                                                    ${q.links.map(l => {
-                                                        if(!l || !l.url) return '';
-                                                        return `<a href="${l.url}" target="_blank" class="px-2.5 py-1 bg-[#1f2937] hover:bg-green-600 border border-gray-700 hover:border-green-500 rounded-lg text-white font-semibold transition">${l.host || 'Link'}</a>`;
-                                                    }).join('')}
-                                                </div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    document.getElementById('download-box').innerHTML = `<p class="text-xs text-gray-500 italic">Link download belum tersedia untuk episode ini.</p>`;
-                }
-            } catch (e) {
-                console.error(e);
-                document.getElementById('episode-title').innerText = "Terjadi kegagalan jaringan API.";
-                document.getElementById('player-loading').innerHTML = `<p class="text-xs text-red-400">Gagal memproses stream video akibat kegagalan API.</p>`;
-            }
+            // Panggil API Video Player di sini seperti kode aslimu...
+            // initWatch(); 
         }
 
-        async function switchStream(serverId) {
-            const playerEl = document.getElementById('video-player');
-            const loaderEl = document.getElementById('player-loading');
+        /* --- SISTEM LEVEL & EXP --- */
+        function setupExpSystem() {
+            const expBanner = document.getElementById('exp-banner');
+            const claimBtn = document.getElementById('claim-exp-btn');
+            const statusTxt = document.getElementById('exp-status');
             
-            loaderEl.classList.remove('hidden');
-            playerEl.classList.add('hidden');
+            expBanner.classList.remove('hidden');
 
-            // Set styling active state button server
-            document.querySelectorAll('.srv-buttons').forEach(btn => {
-                btn.classList.replace('bg-purple-600', 'bg-[#1f2937]/50');
-            });
-            const activeBtn = document.getElementById(`srv-btn-${serverId}`);
-            if(activeBtn) activeBtn.classList.replace('bg-[#1f2937]/50', 'bg-purple-600');
-
-            try {
-                const res = await fetch(`https://api-nanas.my.id/api/nonton/samehadaku/stream.php?slug=${slug}&server=${serverId}`);
-                const data = await res.json();
-                
-                if(data.status && data.result && data.result.stream_url) {
-                    playerEl.src = data.result.stream_url;
-                    
-                    // Delay sejenak biar iframe tidak kelihatan berkedip kasar pas load
-                    playerEl.onload = () => {
-                        loaderEl.classList.add('hidden');
-                        playerEl.classList.remove('hidden');
-                    };
-                } else {
-                    loaderEl.innerHTML = `<p class="text-xs text-red-400 p-4">Server ini gagal memuat video. Silakan coba server lain atau gunakan opsi download.</p>`;
+            // Simulasi menonton (Misal: Harus standby 3 menit. Untuk testing kita set 10 detik)
+            const requiredTime = 10; 
+            let timer = requiredTime;
+            
+            const interval = setInterval(() => {
+                timer--;
+                if(timer <= 0) {
+                    clearInterval(interval);
+                    statusTxt.innerText = "EXP siap diklaim!";
+                    claimBtn.innerText = "Klaim EXP";
+                    claimBtn.disabled = false;
+                    claimBtn.className = "bg-yellow-500 hover:bg-yellow-400 text-black font-black py-2 px-6 rounded-lg transition shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-bounce";
                 }
-            } catch(e) {
-                loaderEl.innerHTML = `<p class="text-xs text-red-400">Gagal memproses stream video.</p>`;
-            }
+            }, 1000);
+
+            claimBtn.addEventListener('click', async () => {
+                claimBtn.disabled = true;
+                claimBtn.innerText = "Memproses...";
+
+                // Random EXP (50 - 150)
+                const gainedExp = Math.floor(Math.random() * 100) + 50; 
+                let newExp = currentUserData.exp + gainedExp;
+                
+                // Logika Level Up (Setiap 500 EXP naik 1 level)
+                let newLevel = Math.floor(newExp / 500) + 1;
+                let levelUpMsg = newLevel > currentUserData.level ? `🎉 LEVEL UP! Kamu sekarang Level ${newLevel}.` : '';
+
+                await supabaseClient.from('profiles').update({ exp: newExp, level: newLevel }).eq('id', currentUserData.id);
+                
+                alert(`Selamat! Kamu mendapat ${gainedExp} EXP. ${levelUpMsg}`);
+                expBanner.classList.add('hidden'); // Sembunyikan setelah klaim
+            });
         }
 
-        // --- SISTEM KOMENTAR ---
-        function renderCommentBox() {
-            const avatarImg = userProfile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${userProfile.id}`;
-            document.getElementById('comment-auth-wrapper').innerHTML = `
-                <div class="flex gap-3">
-                    <img src="${avatarImg}" class="w-8 h-8 rounded-full object-cover">
-                    <div class="flex-1 space-y-2">
-                        <textarea id="comment-text-input" rows="2" placeholder="Tulis komentar kamu tentang episode ini..." class="w-full bg-[#1f2937]/50 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
-                        <button onclick="postComment()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow transition">Kirim Komentar</button>
+        /* --- SISTEM KOMENTAR --- */
+        async function loadComments() {
+            const list = document.getElementById('comments-list');
+            list.innerHTML = '<p class="text-gray-500 text-sm">Memuat komentar...</p>';
+
+            const { data, error } = await supabaseClient
+                .from('comments')
+                .select(`id, content, created_at, user_id, profiles(full_name, avatar_url, role, level, user_id)`)
+                .eq('episode_slug', slug)
+                .order('created_at', { ascending: false });
+
+            if(error || !data.length) {
+                list.innerHTML = '<p class="text-gray-500 text-sm">Belum ada komentar. Jadilah yang pertama!</p>';
+                return;
+            }
+
+            list.innerHTML = data.map(c => `
+                <div class="flex gap-4 p-4 bg-[#1f2937]/50 rounded-xl border border-gray-800">
+                    <img src="${c.profiles.avatar_url}" onclick="openProfile('${c.user_id}')" class="w-10 h-10 rounded-full border border-gray-600 object-cover cursor-pointer hover:border-purple-400 transition" title="Lihat Profil">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span onclick="openProfile('${c.user_id}')" class="font-bold text-sm text-white cursor-pointer hover:underline ${c.profiles.role === 'owner' ? 'role-owner' : ''}">${c.profiles.full_name}</span>
+                            <span class="bg-purple-900 text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Lv.${c.profiles.level}</span>
+                            ${c.profiles.role === 'owner' ? `<span class="bg-red-900 text-red-300 text-[10px] px-2 py-0.5 rounded-full font-bold"><i class="fa-solid fa-crown"></i> Owner</span>` : ''}
+                        </div>
+                        <p class="text-gray-300 text-sm leading-relaxed">${c.content}</p>
                     </div>
                 </div>
-            `;
+            `).join('');
         }
 
-        async function loadComments() {
-            if (!slug) return;
-            const { data, error } = await supabaseClient.from('comments').select('*').eq('episode_slug', slug).order('created_at', { ascending: false });
-            if(data && data.length > 0) {
-                document.getElementById('comments-container').innerHTML = data.map(c => `
-                    <div class="flex gap-3 pt-3">
-                        <img src="${c.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + c.username}" class="w-8 h-8 rounded-full object-cover mt-1">
-                        <div>
-                            <span class="text-xs font-bold text-purple-400 block">${c.username}</span>
-                            <p class="text-xs text-gray-300 mt-0.5">${c.comment_text || ''}</p>
-                        </div>
-                    </div>
-                `).join('');
+        document.getElementById('post-comment-btn').addEventListener('click', async () => {
+            if(!currentUserData) return alert("Silakan Login terlebih dahulu untuk berkomentar!");
+            const content = document.getElementById('comment-input').value;
+            if(!content.trim()) return;
+
+            await supabaseClient.from('comments').insert({ user_id: currentUserData.id, episode_slug: slug, content: content });
+            document.getElementById('comment-input').value = '';
+            loadComments();
+        });
+
+        /* --- SISTEM MODAL PROFIL & ADD FRIEND --- */
+        async function openProfile(userId) {
+            selectedUserId = userId;
+            const { data } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+            if(!data) return;
+
+            document.getElementById('modal-avatar').src = data.avatar_url;
+            document.getElementById('modal-name').innerText = data.full_name;
+            document.getElementById('modal-id').innerText = `#${data.user_id}`;
+            document.getElementById('modal-level').innerText = data.level;
+            document.getElementById('modal-exp').innerText = data.exp;
+            
+            const roleEl = document.getElementById('modal-role');
+            roleEl.innerText = data.role === 'owner' ? '👑 Owner' : 'Member';
+            roleEl.className = `text-sm font-bold mb-4 uppercase tracking-widest ${data.role === 'owner' ? 'role-owner' : 'text-blue-400'}`;
+
+            const addFriendBtn = document.getElementById('add-friend-btn');
+            if(currentUserData && currentUserData.id !== userId) {
+                addFriendBtn.classList.remove('hidden');
+            } else {
+                addFriendBtn.classList.add('hidden'); // Sembunyikan jika profil sendiri atau belum login
             }
+
+            document.getElementById('public-profile-modal').classList.remove('hidden');
         }
 
-        async function postComment() {
-            const txt = document.getElementById('comment-text-input').value;
-            if(!txt.trim() || !slug) return;
+        function closeModal() { document.getElementById('public-profile-modal').classList.add('hidden'); }
 
-            const { error } = await supabaseClient.from('comments').insert({
-                episode_slug: slug,
-                user_id: userProfile.id,
-                username: userProfile.username,
-                avatar_url: userProfile.avatar_url,
-                comment_text: txt
+        document.getElementById('add-friend-btn').addEventListener('click', async () => {
+            if(!currentUserData) return alert("Silakan Login terlebih dahulu!");
+            
+            const { error } = await supabaseClient.from('friends').insert({
+                requester_id: currentUserData.id,
+                receiver_id: selectedUserId,
+                status: 'pending'
             });
 
-            if(!error) {
-                document.getElementById('comment-text-input').value = '';
-                loadComments();
+            if(error) {
+                alert("Permintaan pertemanan sudah dikirim sebelumnya!");
             } else {
-                alert("Gagal mengirim komentar: " + error.message);
+                alert("Permintaan pertemanan berhasil dikirim!");
             }
-        }
+        });
 
-        // --- BONUS XP REWARD ---
-        async function triggerXpReward(prof) {
-            let nextXp = (prof.level || 1) * 100;
-            let newXp = (prof.xp || 0) + 15;
-            let newLevel = prof.level || 1;
-
-            if(newLevel === 999999) return; 
-
-            if(newXp >= nextXp) {
-                newXp -= nextXp;
-                newLevel += 1;
-                alert(`🎉 Selamat! Level Otaku kamu naik ke Level ${newLevel}!`);
-            }
-            await supabaseClient.from('profiles').update({ xp: newXp, level: newLevel }).eq('id', prof.id);
-        }
-
-        initWatchPage();
+        initPage();
     </script>
 </body>
 </html>

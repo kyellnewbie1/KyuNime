@@ -3,168 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Anime - KyuNimeID</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Detail Anime - KyuAnime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Poppins', sans-serif; background-attachment: fixed; background-size: cover; background-position: center; }
-        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Fix Scrollbar Rapi */
-        .scrollbar-custom::-webkit-scrollbar { width: 5px; }
-        .scrollbar-custom::-webkit-scrollbar-track { background: #111827; }
-        .scrollbar-custom::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        .glass-panel { background: rgba(17, 24, 39, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .ep-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(4px); transition: all 0.3s ease; }
+        .ep-card:hover { transform: translateX(10px); background: rgba(147, 51, 234, 0.2); border-color: rgba(168, 85, 247, 0.5); }
+        
+        body { background-color: #050505; color: #e2e8f0; }
+        #bg-blur { position: fixed; inset: 0; z-index: -1; filter: blur(30px) brightness(0.3); transform: scale(1.1); background-size: cover; background-position: center; transition: background-image 1s ease; }
     </style>
 </head>
-<body id="dynamic-bg" class="relative min-h-screen">
-    <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 via-[#0b0f19]/95 to-[#0b0f19] -z-10"></div>
+<body class="antialiased selection:bg-purple-500">
 
-    <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 tracking-wider">Kyu<span class="text-white">NimeID</span></a>
-            <div id="nav-user-zone">
-                <a href="profile.html" class="text-xs bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-purple-900/30"><i class="fa-solid fa-user-astronaut mr-1.5"></i>Masuk</a>
-            </div>
-        </div>
+    <!-- Dinamis Blur Background -->
+    <div id="bg-blur"></div>
+
+    <nav class="fixed w-full top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-3"><a href="index.html" class="text-2xl font-black text-white tracking-tighter"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali</a></div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-8 animate-fade-in">
-        <div id="loading" class="flex justify-center items-center py-24">
-            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
-        </div>
+    <main class="max-w-6xl mx-auto px-4 pt-24 pb-16 min-h-screen flex flex-col relative">
+        <div id="loading" class="absolute inset-0 flex items-center justify-center"><div class="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div></div>
 
-        <div id="detail-box" class="hidden grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div class="md:col-span-1 space-y-4">
-                <div class="relative rounded-2xl overflow-hidden border border-gray-800/80 shadow-2xl">
-                    <img id="anime-cover" src="" alt="Poster" class="w-full h-auto object-cover">
-                    <span id="anime-score" class="absolute top-3 left-3 bg-black/80 backdrop-blur-md text-xs text-yellow-400 font-black px-2.5 py-1 rounded-xl border border-gray-700/50"></span>
+        <div id="content" class="hidden animate-slide-up">
+            
+            <!-- Hero Info Section -->
+            <div class="glass-panel rounded-3xl p-6 md:p-10 flex flex-col md:flex-row gap-8 mb-10 relative overflow-hidden">
+                <!-- Aksen Cahaya -->
+                <div class="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/30 rounded-full blur-[80px]"></div>
+
+                <!-- Poster -->
+                <div class="w-48 sm:w-64 shrink-0 mx-auto md:mx-0 relative group">
+                    <img id="anime-img" src="" class="w-full rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/10 object-cover aspect-[3/4]" alt="Poster">
+                    <div class="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg" id="anime-status"></div>
+                </div>
+
+                <!-- Detail Text -->
+                <div class="flex-1 flex flex-col justify-center z-10">
+                    <h1 id="anime-title" class="text-3xl md:text-5xl font-black text-white mb-4 leading-tight drop-shadow-md"></h1>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5"><p class="text-xs text-gray-400">Tipe</p><p id="anime-type" class="font-bold text-white"></p></div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5"><p class="text-xs text-gray-400">Studio</p><p id="anime-studio" class="font-bold text-white"></p></div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5"><p class="text-xs text-gray-400">Rilis</p><p id="anime-released" class="font-bold text-white"></p></div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5"><p class="text-xs text-gray-400">Total Ep</p><p id="anime-total-ep" class="font-bold text-white">-</p></div>
+                    </div>
+
+                    <div id="anime-genres" class="flex flex-wrap gap-2 mb-6"></div>
+
+                    <div class="bg-black/30 p-5 rounded-2xl border border-white/5">
+                        <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-book-open mr-2"></i>Sinopsis</h3>
+                        <p id="anime-synopsis" class="text-gray-300 text-sm md:text-base leading-relaxed text-justify opacity-90"></p>
+                    </div>
                 </div>
             </div>
 
-            <div class="md:col-span-3 space-y-6">
-                <div>
-                    <h1 id="anime-title" class="text-2xl md:text-3xl font-black text-white leading-tight">...</h1>
-                    <p id="anime-title-jp" class="text-xs text-gray-500 mt-1"></p>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#111827]/40 p-4 rounded-2xl border border-gray-800/50 backdrop-blur-md text-xs">
-                    <div><span class="text-gray-500 block mb-0.5">Tipe:</span> <span id="info-type" class="font-bold text-gray-200"></span></div>
-                    <div><span class="text-gray-500 block mb-0.5">Status:</span> <span id="info-status" class="font-bold text-purple-400"></span></div>
-                    <div><span class="text-gray-500 block mb-0.5">Total Ep:</span> <span id="info-episodes" class="font-bold text-gray-200"></span></div>
-                    <div><span class="text-gray-500 block mb-0.5">Durasi:</span> <span id="info-duration" class="font-bold text-gray-200"></span></div>
-                    <div><span class="text-gray-500 block mb-0.5">Rilis:</span> <span id="info-released" class="font-bold text-gray-200"></span></div>
-                    <div><span class="text-gray-500 block mb-0.5">Studio:</span> <span id="info-studio" class="font-bold text-pink-400"></span></div>
-                </div>
-
-                <div class="space-y-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Genre List</h3>
-                    <div id="anime-genres" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <div class="bg-[#111827]/20 p-5 rounded-2xl border border-gray-800/40">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-purple-400 mb-2"><i class="fa-solid fa-book-open mr-1.5"></i> Sinopsis</h3>
-                    <p id="anime-synopsis" class="text-xs text-gray-400 leading-relaxed text-justify"></p>
-                </div>
-            </div>
-        </div>
-
-        <section id="episode-section" class="hidden mt-12 bg-[#111827]/40 border border-gray-800/60 rounded-2xl p-5 backdrop-blur-md">
-            <h2 class="text-sm font-black uppercase tracking-wider text-gray-200 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-list-ul text-purple-500"></i> Daftar Semua Episode
+            <!-- Episode List -->
+            <h2 class="text-2xl font-black mb-6 text-white drop-shadow-md flex items-center gap-3">
+                <div class="w-2 h-8 bg-purple-500 rounded-full"></div> Daftar Episode
             </h2>
-            <div id="episode-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-custom"></div>
-        </section>
+            <div id="episode-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            
+        </div>
     </main>
 
-    <script src="config.js"></script>
     <script>
-        document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
-        
-        // FIX: Inisialisasi Supabase yang benar
-        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        
+        const API_BASE = "https://api-nanas.my.id/api/nonton/samehadaku";
         const urlParams = new URLSearchParams(window.location.search);
         const animeUrl = urlParams.get('animeUrl');
 
-        async function init() {
-            // Check Auth
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-                if (profile) {
-                    document.getElementById('nav-user-zone').innerHTML = `
-                        <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl">
-                            <img src="${profile.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profile.username}" class="w-6 h-6 rounded-full object-cover">
-                            <span class="text-xs font-bold text-white">${profile.username}</span>
-                        </a>
-                    `;
-                }
-            }
-
-            if (!animeUrl) {
-                document.getElementById('loading').innerHTML = `<p class="text-red-400">URL Tidak valid!</p>`;
-                return;
-            }
-
-            // Fetch Data
+        async function loadDetail() {
+            if(!animeUrl) return document.getElementById('loading').innerHTML = '<p class="text-red-500">URL tidak valid!</p>';
+            
             try {
-                const res = await fetch(`${CONFIG.API_BASE}/detail.php?url=${encodeURIComponent(animeUrl)}`);
+                const res = await fetch(`${API_BASE}/detail.php?url=${encodeURIComponent(animeUrl)}`);
                 const data = await res.json();
-                document.getElementById('loading').classList.add('hidden');
                 
-                if (!data || !data.status || !data.result) throw new Error("Gagal load API");
+                if(!data.status) throw new Error("Data gagal dimuat");
+                const info = data.result;
 
-                const anime = data.result;
-                document.title = (anime.title || 'Detail Anime') + " - KyuNimeID"; // Update Tab Title
-                document.getElementById('anime-title').innerText = anime.title || 'Unknown Title';
-                document.getElementById('anime-title-jp').innerText = anime.title_japanese || anime.title_japan || '';
-                document.getElementById('anime-cover').src = anime.image || anime.thumb || anime.thumbnail || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=500';
-                document.getElementById('anime-score').innerHTML = `<i class="fa-solid fa-star mr-1 text-yellow-400"></i> ${anime.score || '0.0'}`;
-                document.getElementById('anime-synopsis').innerText = anime.synopsis || 'Tidak ada sinopsis untuk anime ini.';
+                document.getElementById('loading').remove();
+                document.getElementById('content').classList.remove('hidden');
+
+                // Set Dynamic Background & Image
+                document.getElementById('bg-blur').style.backgroundImage = `url('${info.image}')`;
+                document.getElementById('anime-img').src = info.image;
                 
-                document.getElementById('info-type').innerText = anime.type || '-';
-                document.getElementById('info-status').innerText = anime.status || '-';
-                document.getElementById('info-episodes').innerText = anime.episodes || '-';
-                document.getElementById('info-duration').innerText = anime.duration || '-';
-                document.getElementById('info-released').innerText = anime.released || '-';
-                document.getElementById('info-studio').innerText = anime.studio || '-';
+                // Set Texts
+                document.getElementById('anime-title').innerText = info.title;
+                document.getElementById('anime-status').innerText = info.status;
+                document.getElementById('anime-type').innerText = info.type || '-';
+                document.getElementById('anime-studio').innerText = info.studio || '-';
+                document.getElementById('anime-released').innerText = info.released || '-';
+                document.getElementById('anime-total-ep').innerText = info.episodes.length + " Ep";
+                document.getElementById('anime-synopsis').innerText = info.synopsis || "Sinopsis tidak tersedia.";
 
-                // Array safeguard checking untuk penanganan .map() agar tidak crash sewaktu-waktu objek kosong
-                if (anime.genres && Array.isArray(anime.genres)) {
-                    document.getElementById('anime-genres').innerHTML = anime.genres.map(g => {
-                        if(!g) return '';
-                        return `<span class="px-3 py-1 bg-purple-900/30 text-purple-400 text-[10px] font-bold rounded-lg border border-purple-500/20">${g.name || 'Genre'}</span>`;
-                    }).join('');
-                } else {
-                    document.getElementById('anime-genres').innerHTML = `<p class="text-xs text-gray-500 italic">Tidak ada list genre.</p>`;
-                }
+                // Genres (Gradient Badges)
+                document.getElementById('anime-genres').innerHTML = info.genres.map(g => 
+                    `<span class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-white/20">${g}</span>`
+                ).join('');
 
-                if (anime.episode_list && Array.isArray(anime.episode_list) && anime.episode_list.length > 0) {
-                    document.getElementById('episode-container').innerHTML = anime.episode_list.map(ep => {
-                        if (!ep || !ep.url) return '';
-                        return `
-                            <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="flex items-center justify-between p-3.5 bg-[#1f2937]/40 border border-gray-800 rounded-xl hover:border-purple-500/60 transition group">
-                                <span class="text-xs font-semibold text-gray-300 group-hover:text-purple-400 transition">${ep.title || 'Main Episode'}</span>
-                                <span class="text-[10px] bg-purple-600 text-white font-black px-2 py-0.5 rounded shadow-sm">PLAY</span>
-                            </a>
-                        `;
-                    }).join('');
-                } else {
-                    document.getElementById('episode-container').innerHTML = `<p class="text-xs text-gray-500 italic col-span-full text-center py-4">Belum ada daftar episode tersedia.</p>`;
-                }
+                // Render Episodes (Staggered Animation)
+                document.getElementById('episode-list').innerHTML = info.episodes.map((ep, index) => {
+                    const delay = index * 30; // Animasi bertingkat
+                    return `
+                    <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="ep-card block p-4 rounded-2xl border border-gray-700/50 group relative overflow-hidden" style="animation: slideUp 0.5s ease forwards; animation-delay: ${delay}ms; opacity: 0;">
+                        <!-- Efek cahaya saat hover -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/10 to-transparent -translate-x-full group-hover:translate-x-full transition duration-700"></div>
+                        
+                        <div class="flex justify-between items-center relative z-10">
+                            <div>
+                                <span class="text-xs text-purple-400 font-black tracking-widest uppercase mb-1 block">EPISODE ${ep.number}</span>
+                                <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition line-clamp-1">${ep.title}</h4>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-white/10 group-hover:bg-purple-600 flex items-center justify-center transition shrink-0 ml-3 shadow-lg">
+                                <i class="fa-solid fa-play text-white ml-1"></i>
+                            </div>
+                        </div>
+                    </a>
+                `}).join('');
 
-                document.getElementById('detail-box').classList.remove('hidden');
-                document.getElementById('episode-section').classList.remove('hidden');
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = `<p class="text-red-400 text-xs text-center"><i class="fa-solid fa-triangle-exclamation mb-2 block"></i> Gagal memuat detail anime.<br>Silakan refresh halaman.</p>`;
+            } catch(e) { 
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Terjadi kesalahan saat memuat data anime.</p>';
             }
         }
-
-        init();
+        loadDetail();
     </script>
 </body>
 </html>

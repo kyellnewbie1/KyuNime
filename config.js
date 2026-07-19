@@ -6,8 +6,8 @@ const CONFIG = {
     BG_URL: "https://files.catbox.moe/rijuxb.jpg",
 
     // KREDENSIAL DATABASE SUPABASE
-    SUPABASE_URL: "https://rpgustndncsmxkfyfrkg.supabase.co",
-    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwZ3VzdG5kbmNzbXhrZnlmcmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0MzM4NjgsImV4cCI6MjEwMDAwOTg2OH0.1rWms-Ms4hcOB6L1HH6mEva6lrdDo2JGdR3KMYtTH4A"
+    SUPABASE_URL: "https://pwrpciqxbpqyjqtmgiiv.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3cnBjaXF4YnBxeWpxdG1naWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDczNjQsImV4cCI6MjEwMDAyMzM2NH0.Kv4Ww8r9UB1jOvicbNrBYD0UYEN7Min8x1FCDHCoOZ8"
 };
 
 // Buat objek CONFIG dapat diakses secara global
