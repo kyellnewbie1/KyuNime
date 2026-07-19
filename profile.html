@@ -3,219 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Otaku - KyuAnime</title>
+    <title>Profilku - KyuNimeID</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-[#0b0f19]/80 backdrop-blur-md text-gray-200 font-sans; }
-        
-        /* Efek Berkilau Goresan RGB Merah khusus Owner */
-        .title-owner {
-            background: linear-gradient(90deg, #ff0000, #990000, #ff4d4d, #ff0000);
-            background-size: 300% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            animation: shineRGB 3s linear infinite;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        body { 
+            background-color: #0b0f19; 
+            color: #e2e8f0; 
+            font-family: 'Poppins', sans-serif;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
         }
-        @keyframes shineRGB {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Efek Kilau RGB Khusus Akun Owner */
+        .owner-glow {
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(236, 72, 153, 0.6);
+            animation: rgbGlow 3s infinite alternate;
+        }
+        @keyframes rgbGlow {
+            0% { color: #f87171; }
+            50% { color: #ec4899; }
+            100% { color: #a855f7; }
         }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 min-h-screen">
+<body id="dynamic-bg" class="relative min-h-screen">
+    <!-- Premium Dark Overlay -->
+    <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 via-[#0b0f19]/95 to-[#0b0f19] -z-10"></div>
 
-    <nav class="bg-[#111827]/90 border-b border-gray-800 px-4 py-3 mb-6">
+    <!-- PRO NAVBAR -->
+    <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
-            <a href="index.html" class="text-sm text-gray-400 hover:text-white"><i class="fa-solid fa-house mr-1"></i> Beranda</a>
+            <a href="index.html" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 tracking-wider hover:scale-105 transition duration-300">Kyu<span class="text-white">NimeID</span></a>
+            <a href="index.html" class="text-xs font-bold text-gray-400 hover:text-purple-400 transition flex items-center gap-1.5 bg-[#1f2937]/40 px-3 py-2 rounded-xl border border-gray-800/60">
+                <i class="fa-solid fa-house"></i> Beranda
+            </a>
         </div>
     </nav>
 
-    <main class="max-w-md mx-auto px-4">
-        <!-- FORM AUTH (LOG IN / SIGN UP) -->
-        <div id="auth-box" class="bg-[#111827]/80 p-6 rounded-2xl border border-gray-800 shadow-2xl hidden">
-            <h2 id="auth-title" class="text-xl font-black text-center text-white mb-6">Masuk Ke KyuAnime</h2>
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-md mx-auto px-4 py-10 animate-fade-in">
+        
+        <!-- LOADING SPINNER -->
+        <div id="profile-loading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+        </div>
+
+        <!-- 1. KOTAK LOGIN / DAFTAR (DISEMBUNYIKAN JIKA SUDAH LOGIN) -->
+        <div id="auth-box" class="hidden bg-[#111827]/60 border border-gray-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl">
+            <h2 id="auth-title" class="text-lg font-black text-white text-center mb-1">Selamat Datang Wokk!</h2>
+            <p id="auth-desc" class="text-[11px] text-gray-500 text-center mb-6">Silakan masuk atau buat akun baru untuk akses streaming.</p>
+            
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs text-gray-400 block mb-1">Email</label>
-                    <input type="email" id="auth-email" class="w-full bg-[#1f2937] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Alamat Email</label>
+                    <input type="email" id="auth-email" placeholder="nama@email.com" class="w-full bg-[#1f2937]/40 text-xs text-white px-4 py-3 rounded-xl border border-gray-800 focus:outline-none focus:border-purple-500 transition">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 block mb-1">Password</label>
-                    <input type="password" id="auth-password" class="w-full bg-[#1f2937] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Kata Sandi</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-[#1f2937]/40 text-xs text-white px-4 py-3 rounded-xl border border-gray-800 focus:outline-none focus:border-purple-500 transition">
                 </div>
-                <button onclick="handleAuth()" id="btn-auth-submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-lg mt-2">Masuk</button>
-                <p class="text-xs text-center text-gray-500 mt-4">
-                    <span id="auth-switch-text">Belum punya akun?</span> 
-                    <button onclick="toggleAuthMode()" id="auth-switch-btn" class="text-purple-400 font-bold hover:underline">Daftar Sekarang</button>
-                </p>
+
+                <button id="btn-primary" onclick="handleAuth()" class="w-full text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 rounded-xl font-bold text-white shadow-lg shadow-purple-900/20 transition duration-300 mt-2">
+                    Masuk Sekarang
+                </button>
+
+                <div class="text-center mt-4">
+                    <button id="btn-toggle" onclick="toggleAuthMode()" class="text-[11px] text-purple-400 hover:underline font-semibold">
+                        Belum punya akun? Daftar Baru Disini
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- DASHBOARD PROFIL USER -->
-        <div id="profile-box" class="bg-[#111827]/80 p-6 rounded-2xl border border-gray-800 shadow-2xl space-y-6 hidden">
-            <!-- Tampilan Kartu Pengguna -->
-            <div class="text-center relative">
-                <div class="relative w-24 h-24 mx-auto mb-3 group">
-                    <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg" class="w-full h-full rounded-full border-2 border-purple-500 object-cover shadow-md" alt="PP">
-                    <label class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer text-xs font-bold text-white">
-                        <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar()">
-                        Ganti PP
-                    </label>
-                </div>
-                <h2 id="user-name" class="text-xl font-black text-white">Loading...</h2>
-                <div id="user-role" class="text-xs font-bold mt-1">User Biasa</div>
+        <!-- 2. KOTAK DASHBOARD PROFIL (MUNCUL JIKA SUDAH LOGIN) -->
+        <div id="profile-box" class="hidden bg-[#111827]/60 border border-gray-800/80 rounded-3xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden text-center">
+            <!-- Badge Role Premium -->
+            <div class="absolute top-4 right-4">
+                <span id="user-role" class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-800 text-gray-400 border border-gray-700/60">
+                    Memuat...
+                </span>
             </div>
 
-            <!-- Sistem Level & XP -->
-            <div class="bg-[#1f2937]/50 border border-gray-800 rounded-xl p-4">
-                <div class="flex justify-between items-center mb-1.5">
-                    <span class="text-xs font-bold text-purple-400 uppercase tracking-wide">Level <span id="user-level">1</span></span>
-                    <span class="text-[11px] text-gray-400" id="user-xp-text">0 / 100 XP</span>
-                </div>
-                <div class="w-full bg-gray-800 rounded-full h-2">
-                    <div id="user-xp-bar" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="w-0%"></div>
-                </div>
-                <p class="text-[10px] text-gray-500 mt-2 text-center">*Tonton anime secara rutin untuk menaikkan level kamu!</p>
+            <!-- Avatar Section -->
+            <div class="relative w-20 h-20 mx-auto mt-4 mb-4">
+                <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Kyu" class="w-full h-full rounded-2xl object-cover border-2 border-purple-500/40 p-1 bg-slate-900">
             </div>
 
-            <!-- Form Edit Data -->
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">Nama Pengguna (Username)</label>
-                    <input type="text" id="edit-username" class="w-full bg-[#1f2937] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
+            <!-- Name & Bio -->
+            <h2 id="user-username" class="text-base font-black text-white">@username</h2>
+            <p id="user-bio" class="text-xs text-gray-400 mt-1 px-4 italic">"Membaca data profil..."</p>
+
+            <!-- Level & XP Status Bar -->
+            <div class="mt-6 bg-[#1f2937]/40 border border-gray-800 p-4 rounded-2xl text-left space-y-3">
+                <div class="flex justify-between text-[11px] font-bold">
+                    <span class="text-gray-400"><i class="fa-solid fa-medal text-yellow-500 mr-1"></i> Level <span id="user-level">1</span></span>
+                    <span class="text-purple-400"><span id="user-xp">0</span> / 100 XP</span>
                 </div>
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">Bio Kreatif</label>
-                    <textarea id="edit-bio" rows="2" class="w-full bg-[#1f2937] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
+                <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                    <div id="user-xp-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
-                <button onclick="updateProfile()" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-md">Simpan Perubahan</button>
-                <button onclick="handleLogout()" class="w-full bg-gray-800 hover:bg-red-900/40 border border-gray-700 text-gray-400 hover:text-red-400 text-xs py-2 rounded-xl transition">Keluar Akun (Log Out)</button>
             </div>
+
+            <!-- Action Button -->
+            <button onclick="handleLogout()" class="w-full text-xs bg-gray-800/80 hover:bg-red-900/40 border border-gray-700/60 hover:border-red-500/40 py-3 rounded-xl font-bold text-gray-300 hover:text-red-400 transition duration-300 mt-6">
+                <i class="fa-solid fa-power-off mr-1.5"></i> Keluar Akun
+            </button>
         </div>
+
     </main>
 
     <script src="config.js"></script>
     <script>
-        // Inisialisasi Supabase Client
-        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        let isSignUpMode = false;
-        let currentUser = null;
+        document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
+        
+        // AMAN: Gunakan window.supabase agar tidak bentrok atau crash di mobile
+        const supabaseProfile = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        let isLoginMode = true;
 
-        // Cek Sesi Login Saat Halaman Dibuka
-        async function checkSession() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('profile-box').classList.remove('hidden');
-                loadUserProfile(user.id);
-            } else {
-                document.getElementById('profile-box').classList.add('hidden');
-                document.getElementById('auth-box').classList.remove('hidden');
-            }
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'Selamat Datang Wokk!' : 'Buat Akun Baru';
+            document.getElementById('auth-desc').innerText = isLoginMode ? 'Silakan masuk atau buat akun baru untuk akses streaming.' : 'Daftarkan email aktifmu untuk mulai kumpulkan XP.';
+            document.getElementById('btn-primary').innerText = isLoginMode ? 'Masuk Sekarang' : 'Daftar Baru';
+            document.getElementById('btn-toggle').innerText = isLoginMode ? 'Belum punya akun? Daftar Baru Disini' : 'Sudah punya akun? Masuk Disini';
         }
 
-        // Ambil Data Profil dari Database
-        async function loadUserProfile(userId) {
-            const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-            if (data) {
-                document.getElementById('user-name').innerText = data.username || 'Otaku';
-                document.getElementById('edit-username').value = data.username || '';
-                document.getElementById('edit-bio').value = data.bio || '';
-                document.getElementById('user-avatar').src = data.avatar_url;
-                
-                // Set Level & Progress Bar XP (Rumus kelipatan 100 per level)
-                const nextXp = data.level * 100;
-                document.getElementById('user-level').innerText = data.level;
-                document.getElementById('user-xp-text').innerText = `${data.xp} / ${nextXp} XP`;
-                document.getElementById('user-xp-bar').style.width = `${(data.xp / nextXp) * 100}%`;
+        // Fungsi Utama Autentikasi (Login / Daftar)
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
 
-                // Atur Tampilan Badge Title Role (User Biasa, Admin, Owner)
-                const roleEl = document.getElementById('user-role');
-                roleEl.className = "text-xs font-bold mt-1 inline-block px-3 py-0.5 rounded";
-                if(data.role === 'Owner') {
-                    roleEl.innerText = "👑 Owner";
-                    roleEl.className += " title-owner";
-                } else if(data.role === 'Admin') {
-                    roleEl.innerText = "🛡️ Admin";
-                    roleEl.classList.add('bg-blue-600/20', 'text-blue-400', 'border', 'border-blue-500/30');
+            if (!email || !password) {
+                alert('Woi, email sama password jangan dikosongin!');
+                return;
+            }
+
+            document.getElementById('btn-primary').innerText = 'Memproses...';
+            document.getElementById('btn-primary').disabled = true;
+
+            if (isLoginMode) {
+                // PROSES MASUK
+                const { data, error } = await supabaseProfile.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert('Gagal Masuk: ' + error.message);
+                    document.getElementById('btn-primary').innerText = 'Masuk Sekarang';
+                    document.getElementById('btn-primary').disabled = false;
                 } else {
-                    roleEl.innerText = "👤 User Biasa";
-                    roleEl.classList.add('bg-gray-800', 'text-gray-400');
+                    checkUserSession();
+                }
+            } else {
+                // PROSES DAFTAR
+                const { data, error } = await supabaseProfile.auth.signUp({ email, password });
+                if (error) {
+                    alert('Gagal Daftar: ' + error.message);
+                    document.getElementById('btn-primary').innerText = 'Daftar Baru';
+                    document.getElementById('btn-primary').disabled = false;
+                } else {
+                    alert('Pendaftaran Berhasil! Silakan langsung login dengan akun tersebut.');
+                    isLoginMode = true;
+                    toggleAuthMode();
+                    document.getElementById('btn-primary').disabled = false;
                 }
             }
         }
 
-        // Aksi Simpan Update Nama & Bio
-        async function updateProfile() {
-            const username = document.getElementById('edit-username').value;
-            const bio = document.getElementById('edit-bio').value;
+        // Cek Status Sesi User Saat Ini
+        async function checkUserSession() {
+            document.getElementById('profile-loading').classList.remove('hidden');
+            document.getElementById('auth-box').classList.add('hidden');
+            document.getElementById('profile-box').classList.add('hidden');
 
-            const { error } = await supabase.from('profiles').update({ username, bio, updated_at: new Date() }).eq('id', currentUser.id);
-            if(!error) { alert('Profil berhasil diperbarui!'); loadUserProfile(currentUser.id); } 
-            else { alert('Gagal update data/Username sudah dipakai.'); }
-        }
+            const { data: { user } } = await supabaseProfile.auth.getUser();
 
-        // Aksi Ganti Foto Profil & Upload ke Supabase Storage
-        async function uploadAvatar() {
-            const fileInput = document.getElementById('avatar-input');
-            if (fileInput.files.length === 0) return;
-            
-            const file = fileInput.files[0];
-            const fileExt = file.name.split('.').pop();
-            const filePath = `${currentUser.id}/${Math.random()}.${fileExt}`;
+            document.getElementById('profile-loading').classList.add('hidden');
 
-            // Upload ke Bucket 'avatars'
-            let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { cacheControl: '3600', upsert: true });
-            if (uploadError) return alert('Gagal upload gambar.');
+            if (user) {
+                // Tarik detail profil asli dari tabel database 'profiles'
+                const { data: profile, error } = await supabaseProfile
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
 
-            // Ambil URL Publiknya
-            const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-            
-            // Simpan URL tersebut ke Tabel Profil User
-            await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
-            loadUserProfile(currentUser.id);
-        }
+                if (profile) {
+                    // Terapkan Data Profil ke UI HTML
+                    document.getElementById('user-username').innerText = `@${profile.username || 'otaku'}`;
+                    document.getElementById('user-avatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`;
+                    document.getElementById('user-bio').innerText = `"${profile.bio || 'Hai, aku seorang Otaku!'}"`;
+                    document.getElementById('user-level').innerText = profile.level || 1;
+                    document.getElementById('user-xp').innerText = profile.xp || 0;
+                    
+                    // Set persentase Progress Bar XP
+                    const xpPercent = Math.min(profile.xp || 0, 100);
+                    document.getElementById('user-xp-bar').style.width = `${xpPercent}%`;
 
-        // Proses Tombol Login / Daftar
-        async function handleAuth() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
+                    // Handle Tampilan Badge Khusus Owner vs User Biasa
+                    const roleBadge = document.getElementById('user-role');
+                    roleBadge.innerText = profile.role || 'User Biasa';
+                    
+                    if (profile.role === 'Owner') {
+                        roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-red-950/80 text-red-400 border border-red-500/50 shadow-md owner-glow";
+                        roleBadge.innerHTML = `<i class="fa-solid fa-crown text-amber-400 mr-1 animate-bounce"></i> Owner`;
+                    } else {
+                        roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-800 text-gray-400 border border-gray-700/60";
+                    }
 
-            if(isSignUpMode) {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if(!error) alert('Pendaftaran sukses! Silakan masuk.');
-                else alert(error.message);
+                    document.getElementById('profile-box').classList.remove('hidden');
+                } else {
+                    // Jaga-jaga jika tabel profiles delay merespon trigger barunya
+                    document.getElementById('user-username').innerText = user.email.split('@')[0];
+                    document.getElementById('user-role').innerText = 'User Biasa';
+                    document.getElementById('profile-box').classList.remove('hidden');
+                }
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if(!error) checkSession();
-                else alert(error.message);
+                // Jika belum masuk, buka kotak form pendaftaran/login
+                document.getElementById('auth-box').classList.remove('hidden');
             }
         }
 
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').innerText = isSignUpMode ? "Daftar Akun Otaku" : "Masuk Ke KyuAnime";
-            document.getElementById('btn-auth-submit').innerText = isSignUpMode ? "Daftar Baru" : "Masuk";
-            document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Sudah punya akun?" : "Belum punya akun?";
-            document.getElementById('auth-switch-btn').innerText = isSignUpMode ? "Masuk Saja" : "Daftar Sekarang";
-        }
-
+        // Fungsi Logout / Keluar
         async function handleLogout() {
-            await supabase.auth.signOut();
-            window.location.reload();
+            if (confirm('Yakin ingin keluar dari akun KyuNimeID kamu, wok?')) {
+                await supabaseProfile.auth.signOut();
+                window.location.reload();
+            }
         }
 
-        checkSession();
+        // Jalankan pemeriksaan status akun secara instan saat halaman dibuka
+        checkUserSession();
     </script>
 </body>
 </html>

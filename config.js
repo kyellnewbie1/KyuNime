@@ -5,7 +5,10 @@ const CONFIG = {
     BG_URL: "https://files.catbox.moe/rijuxb.jpg" // Ganti URL ini jika ingin mengubah gambar background web
 };
 
-// Fungsi otomatis untuk memasang background ke seluruh halaman website
+// Buat objek CONFIG dapat diakses secara global oleh file HTML lain
+window.CONFIG = CONFIG;
+
+// Fungsi otomatis untuk memasang background ke seluruh halaman website secara instan
 function applyGlobalBackground() {
     if (CONFIG.BG_URL && CONFIG.BG_URL.trim() !== "") {
         const style = document.createElement('style');
@@ -18,5 +21,6 @@ function applyGlobalBackground() {
         document.head.appendChild(style);
     }
 }
-// Jalankan otomatis saat file config dimuat
-document.addEventListener("DOMContentLoaded", applyGlobalBackground);
+
+// FIX: Langsung jalankan fungsi tanpa menunggu DOMContentLoaded agar tidak macet/patah
+applyGlobalBackground();
