@@ -6,40 +6,39 @@
     <title>Detail Anime - KyuAnime</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { background-color: #0b0f19; color: #e2e8f0; font-family: sans-serif; }</style>
 </head>
-<body>
+<body class="bg-[#0b0f19] text-e2e8f0">
 
-    <!-- Navbar -->
-    <nav class="bg-[#111827]/90 backdrop-blur-md border-b border-gray-800 px-4 py-3">
+    <nav class="bg-[#111827]/90 border-b border-gray-800 px-4 py-3">
         <div class="max-w-7xl mx-auto"><a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a></div>
     </nav>
 
-    <!-- Content -->
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        <div id="loading" class="flex justify-center items-center py-20"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div></div>
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div id="loading" class="text-center py-20"><div class="animate-spin inline-block rounded-full h-12 w-12 border-t-2 border-purple-500"></div></div>
         
-        <div id="detail-container" class="hidden space-y-6">
-            <!-- Info Card -->
-            <div class="flex flex-col md:flex-row gap-6 bg-[#111827]/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800 shadow-xl">
-                <img id="anime-img" src="" class="w-full md:w-64 rounded-lg object-cover shadow-2xl border border-gray-700" alt="Cover">
+        <div id="detail-container" class="hidden">
+            <!-- Info Utama -->
+            <div class="flex flex-col md:flex-row gap-8 bg-[#111827]/40 p-6 rounded-2xl border border-gray-800 backdrop-blur-md">
+                <div class="w-full md:w-64 shrink-0 mx-auto">
+                    <img id="anime-img" src="" class="w-full rounded-xl border border-gray-700 shadow-xl object-cover aspect-[3/4]" alt="">
+                </div>
                 <div class="flex-1">
-                    <h1 id="anime-title" class="text-2xl md:text-3xl font-black text-white mb-3">Loading...</h1>
-                    <div id="anime-meta" class="grid grid-cols-2 gap-3 text-sm text-gray-300 mb-4 bg-[#1f2937]/50 p-4 rounded-lg border border-gray-800">
-                        <!-- Meta filled via JS -->
+                    <h1 id="anime-title" class="text-3xl font-black text-white mb-4"></h1>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-400 mb-4">
+                        <p>Status: <span id="anime-status" class="text-green-400 font-bold"></span></p>
+                        <p>Tipe: <span id="anime-type" class="text-white"></span></p>
+                        <p>Studio: <span id="anime-studio" class="text-white"></span></p>
+                        <p>Rilis: <span id="anime-released" class="text-white"></span></p>
                     </div>
-                    <h3 class="text-sm font-bold text-purple-400 mb-1 uppercase tracking-wider">Sinopsis:</h3>
-                    <p id="anime-synopsis" class="text-sm text-gray-300 leading-relaxed bg-[#0b0f19]/60 p-4 rounded-lg border border-gray-800 max-h-60 overflow-y-auto"></p>
+                    <div id="anime-genres" class="flex flex-wrap gap-2 mb-4"></div>
+                    <p class="text-sm font-semibold text-purple-400 uppercase tracking-wider mb-1">Sinopsis</p>
+                    <p id="anime-synopsis" class="text-gray-300 text-sm leading-relaxed text-justify"></p>
                 </div>
             </div>
 
-            <!-- Episode List Card -->
-            <div class="bg-[#111827]/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800 shadow-xl">
-                <h2 class="text-xl font-bold mb-4 border-l-4 border-purple-500 pl-3">Daftar Semua Episode</h2>
-                <div id="episode-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[500px] overflow-y-auto pr-2">
-                    <!-- Episodes rendered via JS -->
-                </div>
-            </div>
+            <!-- List Episode -->
+            <h2 class="text-xl font-bold mt-10 mb-4 border-l-4 border-purple-500 pl-3">Daftar Episode</h2>
+            <div id="episode-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </div>
     </main>
 
@@ -49,46 +48,37 @@
         const animeUrl = urlParams.get('animeUrl');
 
         async function loadDetail() {
-            if(!animeUrl) return window.location.href = 'index.html';
-            
+            if(!animeUrl) return;
             try {
                 const res = await fetch(`${CONFIG.API_BASE}/detail.php?url=${encodeURIComponent(animeUrl)}`);
                 const data = await res.json();
                 
-                document.getElementById('loading').classList.add('hidden');
+                if(!data.status) return;
+                const info = data.result;
+
+                document.getElementById('loading').remove();
                 document.getElementById('detail-container').classList.remove('hidden');
 
-                const anime = data.result || data;
-                document.getElementById('anime-title').innerText = anime.title || anime.name;
-                document.getElementById('anime-img').src = anime.image || anime.thumb;
-                document.getElementById('anime-synopsis').innerText = anime.synopsis || "Sinopsis tidak tersedia.";
+                document.getElementById('anime-title').innerText = info.title;
+                document.getElementById('anime-img').src = info.image;
+                document.getElementById('anime-status').innerText = info.status;
+                document.getElementById('anime-type').innerText = info.type;
+                document.getElementById('anime-studio').innerText = info.studio || '-';
+                document.getElementById('anime-released').innerText = info.released;
+                document.getElementById('anime-synopsis').innerText = info.synopsis;
 
-                const metaContainer = document.getElementById('anime-meta');
-                metaContainer.innerHTML = `
-                    <div><span class="text-gray-400">Tipe:</span> ${anime.type || '-'}</div>
-                    <div><span class="text-gray-400">Status:</span> ${anime.status || '-'}</div>
-                    <div><span class="text-gray-400">Total Episode:</span> ${anime.total_episode || '-'}</div>
-                    <div><span class="text-gray-400">Skor:</span> ⭐ ${anime.score || '-'}</div>
-                    <div class="col-span-2"><span class="text-gray-400">Genre:</span> ${Array.isArray(anime.genres) ? anime.genres.join(', ') : (anime.genre || '-')}</div>
-                `;
+                // Genres
+                document.getElementById('anime-genres').innerHTML = info.genres.map(g => `<span class="bg-[#1f2937] text-xs px-3 py-1 rounded-full border border-gray-700 text-gray-300">${g}</span>`).join('');
 
-                const epList = document.getElementById('episode-list');
-                const episodes = anime.episodes || [];
-                
-                if (episodes.length > 0) {
-                    epList.innerHTML = episodes.map(ep => `
-                        <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="flex justify-between items-center p-3 bg-[#111827] rounded-lg border border-gray-800 hover:border-purple-500 hover:bg-[#1f2937] transition text-sm group">
-                            <span class="font-medium text-white group-hover:text-purple-400 transition-colors">${ep.title || ep.name}</span>
-                            <span class="text-xs text-gray-500 whitespace-nowrap">${ep.date || ''} <i class="fa-solid fa-circle-play ml-1 text-purple-500"></i></span>
-                        </a>
-                    `).join('');
-                } else {
-                    epList.innerHTML = `<p class="text-gray-400 col-span-full py-4 text-center">Episode belum dirilis.</p>`;
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = `<p class="text-red-500 text-center">Gagal memuat detail data anime.</p>`;
-            }
+                // Episode List
+                document.getElementById('episode-list').innerHTML = info.episodes.map(ep => `
+                    <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="flex justify-between items-center bg-[#111827]/80 hover:bg-purple-950 p-4 rounded-xl border border-gray-800 transition group">
+                        <span class="text-sm font-bold text-white group-hover:text-purple-400">Episode ${ep.number} ${ep.title}</span>
+                        <span class="text-xs text-gray-500"><i class="fa-solid fa-play mr-1"></i> Tonton</span>
+                    </a>
+                `).join('');
+
+            } catch(e) { console.error(e); }
         }
         loadDetail();
     </script>

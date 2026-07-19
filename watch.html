@@ -3,119 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nonton Streaming - KyuAnime</title>
+    <title>Nonton Anime - KyuAnime</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { background-color: #0b0f19; color: #e2e8f0; font-family: sans-serif; }</style>
 </head>
-<body>
+<body class="bg-[#0b0f19] text-gray-200">
 
-    <!-- Navbar -->
-    <nav class="bg-[#111827]/90 backdrop-blur-md border-b border-gray-800 px-4 py-3">
+    <nav class="bg-[#111827]/90 border-b border-gray-800 px-4 py-3">
         <div class="max-w-7xl mx-auto"><a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a></div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        <h1 id="episode-title" class="text-lg md:text-xl font-black text-white line-clamp-1">Memuat Info Video...</h1>
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <h1 id="episode-title" class="text-xl font-bold mb-4 text-white">Memuat Halaman Nonton...</h1>
 
-        <!-- Video Frame Outer -->
-        <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 aspect-video relative">
-            <iframe id="video-player" src="" class="w-full h-full" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        <!-- Video Player Wrapper -->
+        <div class="relative bg-black rounded-2xl overflow-hidden aspect-video border border-gray-800 shadow-2xl mb-6">
+            <iframe id="video-player" src="" class="w-full h-full absolute inset-0" allowfullscreen frameborder="0"></iframe>
         </div>
 
-        <!-- Server Selector & Control -->
-        <div class="bg-[#111827]/80 backdrop-blur-sm p-4 rounded-xl border border-gray-800 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <h3 class="text-xs uppercase font-bold text-gray-400 mb-1 tracking-wider">Pilihan Server Streaming</h3>
-                <div id="server-container" class="flex flex-wrap gap-2">
-                    <button onclick="changeServer(1)" class="srv-btn px-4 py-1.5 bg-purple-600 rounded text-xs text-white font-bold transition">Server 1</button>
-                    <button onclick="changeServer(2)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-xs text-white font-bold transition hover:bg-purple-600">Server 2</button>
-                    <button onclick="changeServer(3)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-xs text-white font-bold transition hover:bg-purple-600">Server 3</button>
-                </div>
-            </div>
-            <p class="text-xs text-gray-400"><i class="fa-solid fa-circle-info mr-1 text-purple-400"></i>Ganti server jika player eror atau tidak termuat.</p>
+        <!-- Pilihan Server Stream -->
+        <div class="bg-[#111827]/60 p-4 rounded-xl border border-gray-800 mb-8">
+            <p class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-server mr-1"></i> Pilih Server Player:</p>
+            <div id="server-list" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <!-- Download Section -->
-        <div class="bg-[#111827]/80 backdrop-blur-sm p-5 rounded-xl border border-gray-800 shadow-md">
-            <h2 class="text-base font-bold text-purple-400 mb-3"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Link Unduhan Episode</h2>
-            <div id="download-container" class="space-y-3">
-                <div class="flex justify-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-t-2 border-purple-500"></div></div>
-            </div>
-        </div>
+        <!-- Area Download -->
+        <h2 class="text-lg font-bold mb-4 border-l-4 border-purple-500 pl-3"><i class="fa-solid fa-download mr-2"></i>Link Download Episode</h2>
+        <div id="download-box" class="space-y-4"></div>
     </main>
 
     <script src="config.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const episodeUrl = urlParams.get('episodeUrl');
-        
-        let slug = "";
-        if (episodeUrl) {
-            const cleanUrl = episodeUrl.replace(/\/$/, ""); 
-            slug = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
-        }
 
-        function loadVideo(serverNumber) {
-            if(!slug) return;
-            const playerUrl = `${CONFIG.API_BASE}/stream.php?slug=${slug}&server=${serverNumber}`;
-            document.getElementById('video-player').src = playerUrl;
-            
-            document.querySelectorAll('.srv-btn').forEach((btn, idx) => {
-                if((idx + 1) === serverNumber) {
-                    btn.classList.replace('bg-[#1f2937]', 'bg-purple-600');
-                } else {
-                    btn.classList.replace('bg-purple-600', 'bg-[#1f2937]');
-                }
-            });
-        }
-
-        function changeServer(num) {
-            loadVideo(num);
-        }
-
-        async function loadDownloads() {
+        async function initWatch() {
             if(!episodeUrl) return;
-            
-            document.getElementById('episode-title').innerText = slug.replace(/-/g, ' ').toUpperCase();
-
             try {
-                const res = await fetch(`${CONFIG.API_BASE}/download.php?url=${encodeURIComponent(episodeUrl)}`);
-                const data = await res.json();
-                const dlContainer = document.getElementById('download-container');
-                dlContainer.innerHTML = '';
-
-                const dlData = data.result || data;
+                // 1. Ambil data Download untuk memetakan server list & file download
+                const dlRes = await fetch(`${CONFIG.API_BASE}/download.php?url=${encodeURIComponent(episodeUrl)}`);
+                const dlData = await dlRes.json();
+                if(!dlData.status) return;
                 
-                if (dlData && dlData.length > 0) {
-                    dlData.forEach(item => {
-                        const quality = item.quality || 'Format Unduhan';
-                        const linksHtml = Object.entries(item.links || {})
-                            .map(([serverName, linkUrl]) => `
-                                <a href="${linkUrl}" target="_blank" rel="noopener" class="bg-[#1f2937] hover:bg-purple-600 text-xs px-3 py-1.5 rounded transition text-white font-medium border border-gray-700 hover:border-purple-500">
-                                    ${serverName}
-                                </a>
-                            `).join('');
+                const result = dlData.result;
+                document.getElementById('episode-title').innerText = result.title;
 
-                        dlContainer.innerHTML += `
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800/60 pb-3 last:border-none gap-2">
-                                <span class="text-xs font-bold text-gray-200 bg-[#0b0f19] px-2.5 py-1 rounded border border-gray-800">${quality}</span>
-                                <div class="flex flex-wrap gap-1.5">${linksHtml}</div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    dlContainer.innerHTML = `<p class="text-gray-400 text-sm">Link download tidak tersedia untuk episode ini.</p>`;
-                }
-            } catch (err) {
-                document.getElementById('download-container').innerHTML = `<p class="text-red-500 text-sm">Gagal mengambil data download.</p>`;
-            }
+                // 2. Render Pilihan Server Streaming
+                const serverList = document.getElementById('server-list');
+                result.servers.forEach(srv => {
+                    const btn = document.createElement('button');
+                    btn.className = "px-4 py-2 bg-[#1f2937] text-xs font-semibold rounded-lg border border-gray-700 hover:bg-purple-600 transition text-white";
+                    btn.innerText = srv.name;
+                    btn.onclick = () => switchServer(srv.id);
+                    serverList.appendChild(btn);
+                });
+
+                // Set server default pertama kali (Server ID 1)
+                if(result.servers.length > 0) switchServer(result.servers[0].id);
+
+                // 3. Render Link Download Berdasarkan Format & Kualitas
+                const dlBox = document.getElementById('download-box');
+                dlBox.innerHTML = result.downloads.map(fmt => `
+                    <div class="bg-[#111827]/40 border border-gray-800 rounded-xl p-4">
+                        <span class="bg-purple-600 text-xs font-extrabold px-3 py-1 rounded text-white tracking-widest uppercase">${fmt.format}</span>
+                        <div class="mt-3 divide-y divide-gray-800/60">
+                            ${fmt.qualities.map(q => `
+                                <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <span class="text-sm font-bold text-gray-300"><i class="fa-solid fa-display mr-2 text-purple-400"></i>Resolusi ${q.quality}</span>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${q.links.map(lnk => `
+                                            <a href="${lnk.url}" target="_blank" class="px-3 py-1 bg-[#1f2937] hover:bg-green-600 border border-gray-700 hover:border-green-500 text-xs rounded transition text-white font-medium">
+                                                <i class="fa-solid fa-cloud-arrow-down mr-1"></i>${lnk.host}
+                                            </a>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch(e) { console.error(e); }
         }
 
-        // Jalankan
-        loadVideo(1);
-        loadDownloads();
+        // Fungsi memanggil API Stream untuk mengubah src iframe video player
+        async function switchServer(serverId) {
+            // Kita potong slug dari URL halaman nonton samehadaku asli
+            const slug = episodeUrl.replace(/\/$/, '').split('/').pop();
+            try {
+                const streamRes = await fetch(`${CONFIG.API_BASE}/stream.php?slug=${slug}&server=${serverId}`);
+                const streamData = await streamRes.json();
+                if(streamData.status && streamData.result.stream_url) {
+                    document.getElementById('video-player').src = streamData.result.stream_url;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        initWatch();
     </script>
 </body>
 </html>
