@@ -96,7 +96,7 @@
                 if (profile) {
                     document.getElementById('nav-user-zone').innerHTML = `
                         <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl">
-                            <img src="${profile.avatar_url}" class="w-6 h-6 rounded-full object-cover">
+                            <img src="${profile.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profile.username}" class="w-6 h-6 rounded-full object-cover">
                             <span class="text-xs font-bold text-white">${profile.username}</span>
                         </a>
                     `;
@@ -114,15 +114,15 @@
                 const data = await res.json();
                 document.getElementById('loading').classList.add('hidden');
                 
-                if (!data.status) throw new Error("Gagal load API");
+                if (!data || !data.status || !data.result) throw new Error("Gagal load API");
 
                 const anime = data.result;
-                document.title = anime.title + " - KyuNimeID"; // Update Tab Title
-                document.getElementById('anime-title').innerText = anime.title;
-                document.getElementById('anime-title-jp').innerText = anime.title_japanese || '';
-                document.getElementById('anime-cover').src = anime.image;
+                document.title = (anime.title || 'Detail Anime') + " - KyuNimeID"; // Update Tab Title
+                document.getElementById('anime-title').innerText = anime.title || 'Unknown Title';
+                document.getElementById('anime-title-jp').innerText = anime.title_japanese || anime.title_japan || '';
+                document.getElementById('anime-cover').src = anime.image || anime.thumb || anime.thumbnail || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=500';
                 document.getElementById('anime-score').innerHTML = `<i class="fa-solid fa-star mr-1 text-yellow-400"></i> ${anime.score || '0.0'}`;
-                document.getElementById('anime-synopsis').innerText = anime.synopsis || 'Tidak ada sinopsis.';
+                document.getElementById('anime-synopsis').innerText = anime.synopsis || 'Tidak ada sinopsis untuk anime ini.';
                 
                 document.getElementById('info-type').innerText = anime.type || '-';
                 document.getElementById('info-status').innerText = anime.status || '-';
@@ -131,23 +131,35 @@
                 document.getElementById('info-released').innerText = anime.released || '-';
                 document.getElementById('info-studio').innerText = anime.studio || '-';
 
-                if (anime.genres) {
-                    document.getElementById('anime-genres').innerHTML = anime.genres.map(g => `<span class="px-3 py-1 bg-purple-900/30 text-purple-400 text-[10px] font-bold rounded-lg border border-purple-500/20">${g.name}</span>`).join('');
+                // Array safeguard checking untuk penanganan .map() agar tidak crash sewaktu-waktu objek kosong
+                if (anime.genres && Array.isArray(anime.genres)) {
+                    document.getElementById('anime-genres').innerHTML = anime.genres.map(g => {
+                        if(!g) return '';
+                        return `<span class="px-3 py-1 bg-purple-900/30 text-purple-400 text-[10px] font-bold rounded-lg border border-purple-500/20">${g.name || 'Genre'}</span>`;
+                    }).join('');
+                } else {
+                    document.getElementById('anime-genres').innerHTML = `<p class="text-xs text-gray-500 italic">Tidak ada list genre.</p>`;
                 }
 
-                if (anime.episode_list && anime.episode_list.length > 0) {
-                    document.getElementById('episode-container').innerHTML = anime.episode_list.map(ep => `
-                        <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="flex items-center justify-between p-3.5 bg-[#1f2937]/40 border border-gray-800 rounded-xl hover:border-purple-500/60 transition group">
-                            <span class="text-xs font-semibold text-gray-300 group-hover:text-purple-400 transition">${ep.title}</span>
-                            <span class="text-[10px] bg-purple-600 text-white font-black px-2 py-0.5 rounded shadow-sm">PLAY</span>
-                        </a>
-                    `).join('');
+                if (anime.episode_list && Array.isArray(anime.episode_list) && anime.episode_list.length > 0) {
+                    document.getElementById('episode-container').innerHTML = anime.episode_list.map(ep => {
+                        if (!ep || !ep.url) return '';
+                        return `
+                            <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="flex items-center justify-between p-3.5 bg-[#1f2937]/40 border border-gray-800 rounded-xl hover:border-purple-500/60 transition group">
+                                <span class="text-xs font-semibold text-gray-300 group-hover:text-purple-400 transition">${ep.title || 'Main Episode'}</span>
+                                <span class="text-[10px] bg-purple-600 text-white font-black px-2 py-0.5 rounded shadow-sm">PLAY</span>
+                            </a>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('episode-container').innerHTML = `<p class="text-xs text-gray-500 italic col-span-full text-center py-4">Belum ada daftar episode tersedia.</p>`;
                 }
 
                 document.getElementById('detail-box').classList.remove('hidden');
                 document.getElementById('episode-section').classList.remove('hidden');
 
             } catch (err) {
+                console.error(err);
                 document.getElementById('loading').innerHTML = `<p class="text-red-400 text-xs text-center"><i class="fa-solid fa-triangle-exclamation mb-2 block"></i> Gagal memuat detail anime.<br>Silakan refresh halaman.</p>`;
             }
         }

@@ -114,7 +114,7 @@
                     if (data) {
                         document.getElementById('nav-user-zone').innerHTML = `
                             <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl hover:border-purple-500 transition max-w-[150px]">
-                                <img src="${data.avatar_url}" class="w-6 h-6 rounded-full object-cover flex-shrink-0">
+                                <img src="${data.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + data.username}" class="w-6 h-6 rounded-full object-cover flex-shrink-0">
                                 <span class="text-xs font-bold text-white truncate">${data.username}</span>
                             </a>
                         `;
@@ -154,7 +154,7 @@
             const daysIndo = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
             sectionTitle.innerText = `Jadwal Rilis: Hari ${daysIndo[day]}`;
             const res = await apiRequest(`/schedule.php?day=${day}&perpage=test_value`);
-            const items = res?.result || res;
+            const items = res?.result?.anime_list || res?.result || res;
             renderCards(items, 'schedule');
         }
 
@@ -163,7 +163,7 @@
             pagination.classList.add('hidden');
             sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
             const res = await apiRequest(`/search.php?q=${encodeURIComponent(query)}`);
-            const items = res?.result || res;
+            const items = res?.result?.anime_list || res?.result || res;
             renderCards(items, 'search');
         }
 
@@ -174,20 +174,26 @@
                 return;
             }
             container.innerHTML = items.map(anime => {
-                const title = anime.title || anime.name;
-                const img = anime.image || anime.thumb || anime.thumbnail || anime.featured_img_src;
+                if (!anime) return '';
+                const title = anime.title || anime.name || 'Unknown Anime';
+                const img = anime.image || anime.thumb || anime.thumbnail || anime.featured_img_src || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=500';
                 
-                const animeUrl = anime.url || anime.link;
+                const animeUrl = anime.url || anime.link || '';
+                if(!animeUrl) return '';
+
                 const href = (type === 'terbaru') 
                     ? `watch.html?episodeUrl=${encodeURIComponent(animeUrl)}` 
                     : `detail.html?animeUrl=${encodeURIComponent(animeUrl)}`;
+
+                const epValue = anime.episode || anime.episodes;
+                const scoreValue = anime.score || anime.rating;
 
                 return `
                     <a href="${href}" class="group bg-[#111827]/40 rounded-2xl overflow-hidden border border-gray-800/80 hover:border-purple-500/60 flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-950/20 backdrop-blur-md">
                         <div class="relative overflow-hidden aspect-[3/4]">
                             <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" loading="lazy">
-                            ${anime.episode || anime.episodes ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${anime.episode || anime.episodes}</span>` : ''}
-                            ${anime.score || anime.rating ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${anime.score || anime.rating}</span>` : ''}
+                            ${epValue ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${epValue}</span>` : ''}
+                            ${scoreValue ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${scoreValue}</span>` : ''}
                         </div>
                         <div class="p-3.5 flex-1 flex flex-col justify-between bg-gradient-to-t from-[#111827]/90 to-[#111827]/30">
                             <h3 class="text-xs font-bold line-clamp-2 text-gray-200 group-hover:text-purple-400 transition duration-300">${title}</h3>

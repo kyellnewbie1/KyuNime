@@ -75,11 +75,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const episodeUrl = urlParams.get('episodeUrl');
         
-        // Paking cerdas ekstraksi slug: Menghindari error pemotongan karakter url mentah
+        // Pemotongan slug adaptif untuk memilah query (?page dsb) maupun path bersih
         let slug = '';
         if (episodeUrl) {
-            const cleanUrl = episodeUrl.replace(/\/$/, '');
-            slug = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+            try {
+                const cleanPath = episodeUrl.split('?')[0].replace(/\/$/, '');
+                slug = cleanPath.substring(cleanPath.lastIndexOf('/') + 1);
+            } catch (e) {
+                slug = '';
+            }
         }
 
         let userProfile = null;
@@ -111,10 +115,11 @@
                 
                 if(!dl.status || !dl.result) {
                     document.getElementById('episode-title').innerText = "Gagal memuat detail episode.";
+                    document.getElementById('player-loading').innerHTML = `<p class="text-xs text-amber-400">Gagal memproses data API Samehadaku.</p>`;
                     return;
                 }
 
-                document.getElementById('episode-title').innerText = dl.result.title;
+                document.getElementById('episode-title').innerText = dl.result.title || 'Streaming Anime';
 
                 // Servers Player Button Render
                 const srvBox = document.getElementById('server-list');
@@ -138,27 +143,37 @@
 
                 // Downloads Render
                 if (dl.result.downloads && dl.result.downloads.length > 0) {
-                    document.getElementById('download-box').innerHTML = dl.result.downloads.map(fmt => `
-                        <div class="bg-[#111827]/60 p-3 rounded-xl border border-gray-800/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                            <span class="text-xs font-black text-purple-400 uppercase tracking-widest">${fmt.format}</span>
-                            <div class="flex flex-col gap-2 w-full md:w-auto">
-                                ${fmt.qualities.map(q => `
-                                    <div class="flex items-center justify-between sm:justify-end gap-3 text-[11px]">
-                                        <span class="text-gray-400 font-medium">${q.quality}</span>
-                                        <div class="flex flex-wrap gap-1">
-                                            ${q.links.map(l => `<a href="${l.url}" target="_blank" class="px-2.5 py-1 bg-[#1f2937] hover:bg-green-600 border border-gray-700 hover:border-green-500 rounded-lg text-white font-semibold transition">${l.host}</a>`).join('')}
-                                        </div>
-                                    </div>
-                                `).join('')}
+                    document.getElementById('download-box').innerHTML = dl.result.downloads.map(fmt => {
+                        if (!fmt || !fmt.qualities) return '';
+                        return `
+                            <div class="bg-[#111827]/60 p-3 rounded-xl border border-gray-800/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <span class="text-xs font-black text-purple-400 uppercase tracking-widest">${fmt.format || 'MKV/MP4'}</span>
+                                <div class="flex flex-col gap-2 w-full md:w-auto">
+                                    ${fmt.qualities.map(q => {
+                                        if(!q || !q.links) return '';
+                                        return `
+                                            <div class="flex items-center justify-between sm:justify-end gap-3 text-[11px]">
+                                                <span class="text-gray-400 font-medium">${q.quality || 'Unknown'}</span>
+                                                <div class="flex flex-wrap gap-1">
+                                                    ${q.links.map(l => {
+                                                        if(!l || !l.url) return '';
+                                                        return `<a href="${l.url}" target="_blank" class="px-2.5 py-1 bg-[#1f2937] hover:bg-green-600 border border-gray-700 hover:border-green-500 rounded-lg text-white font-semibold transition">${l.host || 'Link'}</a>`;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
                     document.getElementById('download-box').innerHTML = `<p class="text-xs text-gray-500 italic">Link download belum tersedia untuk episode ini.</p>`;
                 }
             } catch (e) {
                 console.error(e);
                 document.getElementById('episode-title').innerText = "Terjadi kegagalan jaringan API.";
+                document.getElementById('player-loading').innerHTML = `<p class="text-xs text-red-400">Gagal memproses stream video akibat kegagalan API.</p>`;
             }
         }
 
@@ -211,6 +226,7 @@
         }
 
         async function loadComments() {
+            if (!slug) return;
             const { data, error } = await supabaseClient.from('comments').select('*').eq('episode_slug', slug).order('created_at', { ascending: false });
             if(data && data.length > 0) {
                 document.getElementById('comments-container').innerHTML = data.map(c => `
@@ -218,7 +234,7 @@
                         <img src="${c.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + c.username}" class="w-8 h-8 rounded-full object-cover mt-1">
                         <div>
                             <span class="text-xs font-bold text-purple-400 block">${c.username}</span>
-                            <p class="text-xs text-gray-300 mt-0.5">${c.comment_text}</p>
+                            <p class="text-xs text-gray-300 mt-0.5">${c.comment_text || ''}</p>
                         </div>
                     </div>
                 `).join('');
@@ -227,7 +243,7 @@
 
         async function postComment() {
             const txt = document.getElementById('comment-text-input').value;
-            if(!txt.trim()) return;
+            if(!txt.trim() || !slug) return;
 
             const { error } = await supabaseClient.from('comments').insert({
                 episode_slug: slug,
@@ -247,7 +263,7 @@
 
         // --- BONUS XP REWARD ---
         async function triggerXpReward(prof) {
-            let nextXp = prof.level * 100;
+            let nextXp = (prof.level || 1) * 100;
             let newXp = (prof.xp || 0) + 15;
             let newLevel = prof.level || 1;
 
