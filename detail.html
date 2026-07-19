@@ -20,7 +20,6 @@
 </head>
 <body class="antialiased selection:bg-purple-500">
 
-    <!-- Dinamis Blur Background -->
     <div id="bg-blur"></div>
 
     <nav class="fixed w-full top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10">
@@ -32,18 +31,14 @@
 
         <div id="content" class="hidden animate-slide-up">
             
-            <!-- Hero Info Section -->
             <div class="glass-panel rounded-3xl p-6 md:p-10 flex flex-col md:flex-row gap-8 mb-10 relative overflow-hidden">
-                <!-- Aksen Cahaya -->
                 <div class="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/30 rounded-full blur-[80px]"></div>
 
-                <!-- Poster -->
                 <div class="w-48 sm:w-64 shrink-0 mx-auto md:mx-0 relative group">
                     <img id="anime-img" src="" class="w-full rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/10 object-cover aspect-[3/4]" alt="Poster">
                     <div class="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg" id="anime-status"></div>
                 </div>
 
-                <!-- Detail Text -->
                 <div class="flex-1 flex flex-col justify-center z-10">
                     <h1 id="anime-title" class="text-3xl md:text-5xl font-black text-white mb-4 leading-tight drop-shadow-md"></h1>
                     
@@ -63,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- Episode List -->
             <h2 class="text-2xl font-black mb-6 text-white drop-shadow-md flex items-center gap-3">
                 <div class="w-2 h-8 bg-purple-500 rounded-full"></div> Daftar Episode
             </h2>
@@ -71,7 +65,10 @@
             
         </div>
     </main>
-
+    
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    
     <script>
         const API_BASE = "https://api-nanas.my.id/api/nonton/samehadaku";
         const urlParams = new URLSearchParams(window.location.search);
@@ -100,33 +97,41 @@
                 document.getElementById('anime-type').innerText = info.type || '-';
                 document.getElementById('anime-studio').innerText = info.studio || '-';
                 document.getElementById('anime-released').innerText = info.released || '-';
-                document.getElementById('anime-total-ep').innerText = info.episodes.length + " Ep";
+                
+                // Proteksi Optional Chaining (?.) agar tidak crash jika property episodes kosong
+                const totalEp = info.episodes ? info.episodes.length : 0;
+                document.getElementById('anime-total-ep').innerText = totalEp + " Ep";
                 document.getElementById('anime-synopsis').innerText = info.synopsis || "Sinopsis tidak tersedia.";
 
                 // Genres (Gradient Badges)
-                document.getElementById('anime-genres').innerHTML = info.genres.map(g => 
+                const genres = info.genres || [];
+                document.getElementById('anime-genres').innerHTML = genres.map(g => 
                     `<span class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-white/20">${g}</span>`
                 ).join('');
 
-                // Render Episodes (Staggered Animation)
-                document.getElementById('episode-list').innerHTML = info.episodes.map((ep, index) => {
-                    const delay = index * 30; // Animasi bertingkat
-                    return `
-                    <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="ep-card block p-4 rounded-2xl border border-gray-700/50 group relative overflow-hidden" style="animation: slideUp 0.5s ease forwards; animation-delay: ${delay}ms; opacity: 0;">
-                        <!-- Efek cahaya saat hover -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/10 to-transparent -translate-x-full group-hover:translate-x-full transition duration-700"></div>
-                        
-                        <div class="flex justify-between items-center relative z-10">
-                            <div>
-                                <span class="text-xs text-purple-400 font-black tracking-widest uppercase mb-1 block">EPISODE ${ep.number}</span>
-                                <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition line-clamp-1">${ep.title}</h4>
+                // Render Episodes (Staggered Animation) dengan validasi array kosong
+                const episodes = info.episodes || [];
+                if(episodes.length === 0) {
+                    document.getElementById('episode-list').innerHTML = '<p class="col-span-full text-center text-gray-500 py-6">Belum ada episode yang dirilis.</p>';
+                } else {
+                    document.getElementById('episode-list').innerHTML = episodes.map((ep, index) => {
+                        const delay = index * 30; // Animasi bertingkat
+                        return `
+                        <a href="watch.html?episodeUrl=${encodeURIComponent(ep.url)}" class="ep-card block p-4 rounded-2xl border border-gray-700/50 group relative overflow-hidden" style="animation: slideUp 0.5s ease forwards; animation-delay: ${delay}ms; opacity: 0;">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/10 to-transparent -translate-x-full group-hover:translate-x-full transition duration-700"></div>
+                            
+                            <div class="flex justify-between items-center relative z-10">
+                                <div>
+                                    <span class="text-xs text-purple-400 font-black tracking-widest uppercase mb-1 block">EPISODE ${ep.number}</span>
+                                    <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition line-clamp-1">${ep.title}</h4>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-white/10 group-hover:bg-purple-600 flex items-center justify-center transition shrink-0 ml-3 shadow-lg">
+                                    <i class="fa-solid fa-play text-white ml-1"></i>
+                                </div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-white/10 group-hover:bg-purple-600 flex items-center justify-center transition shrink-0 ml-3 shadow-lg">
-                                <i class="fa-solid fa-play text-white ml-1"></i>
-                            </div>
-                        </div>
-                    </a>
-                `}).join('');
+                        </a>
+                    `}).join('');
+                }
 
             } catch(e) { 
                 document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Terjadi kesalahan saat memuat data anime.</p>';

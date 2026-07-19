@@ -134,9 +134,6 @@
         const episodeUrl = urlParams.get('episodeUrl');
         const slug = episodeUrl ? episodeUrl.replace(/\/$/, '').split('/').pop() : 'unknown';
         
-        // PENTING: Gunakan supabaseClient agar tidak nabrak bug!
-        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        
         let currentUserData = null;
         let selectedUserId = null;
 
@@ -314,7 +311,8 @@
                 .eq('episode_slug', slug)
                 .order('created_at', { ascending: false });
 
-            if(error || !data.length) {
+            if(error || !data || !data.length)
+ {
                 list.innerHTML = '<div class="glass-panel p-6 rounded-2xl text-center"><p class="text-gray-400 text-sm">Belum ada komentar. Jadilah yang pertama berkomentar!</p></div>';
                 return;
             }
