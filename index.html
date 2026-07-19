@@ -3,71 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KyuAnime - Streaming & Download Anime Sub Indo</title>
+    <title>KyuNimeID - Platform Streaming & Download Anime Sub Indo</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #0b0f19; color: #e2e8f0; font-family: sans-serif; }
-        .anime-card:hover img { transform: scale(1.05); }
+        body { 
+            background-color: #0b0f19; 
+            color: #e2e8f0; 
+            font-family: 'Poppins', sans-serif;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body id="dynamic-bg" class="relative min-h-screen">
+    <!-- Overlay Gelap Kualitas Premium -->
+    <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 via-[#0b0f19]/95 to-[#0b0f19] -z-10"></div>
 
-    <!-- Navbar -->
-    <nav class="bg-[#111827]/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
-            <div class="relative w-full sm:w-80">
-                <input type="text" id="search-input" placeholder="Cari anime favoritmu..." class="w-full bg-[#1f2937]/80 text-sm text-white pl-4 pr-10 py-2 rounded-full border border-gray-700 focus:outline-none focus:border-purple-500">
-                <button id="search-btn" class="absolute right-3 top-2.5 text-gray-400 hover:text-purple-500">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
+    <!-- PRO NAVBAR -->
+    <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3 transition-all">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center justify-between w-full md:w-auto gap-6">
+                <a href="index.html" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 tracking-wider hover:scale-105 transition duration-300">Kyu<span class="text-white">NimeID</span></a>
+                <!-- Nav Links Tambahan -->
+                <div class="hidden sm:flex items-center gap-4 text-xs font-semibold text-gray-400">
+                    <a href="index.html" class="hover:text-purple-400 transition"><i class="fa-solid fa-fire mr-1"></i> Populer</a>
+                    <a href="#" onclick="alert('Fitur Daftar Movie Segera Hadir!')" class="hover:text-purple-400 transition"><i class="fa-solid fa-clapperboard mr-1"></i> Movies</a>
+                </div>
+            </div>
+            
+            <!-- Search & User Control -->
+            <div class="flex items-center justify-between md:justify-end w-full md:w-auto gap-4">
+                <div class="relative w-full sm:w-64 group">
+                    <input type="text" id="search-input" placeholder="Cari anime..." class="w-full bg-[#1f2937]/60 text-xs text-white pl-4 pr-10 py-2.5 rounded-xl border border-gray-800 focus:outline-none focus:border-purple-500 focus:bg-[#1f2937]/90 transition duration-300">
+                    <button id="search-btn" class="absolute right-3 top-3 text-gray-500 group-focus-within:text-purple-400 transition">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </button>
+                </div>
+                
+                <div id="nav-user-zone">
+                    <a href="profile.html" class="text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-purple-900/30 transition duration-300"><i class="fa-solid fa-user-astronaut mr-1.5"></i>Masuk</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
-        
-        <!-- Schedule Days -->
-        <section class="mb-8 bg-[#111827]/60 p-4 rounded-xl border border-gray-800/80 backdrop-blur-sm">
-            <h2 class="text-sm font-bold uppercase tracking-wider mb-3 text-purple-400"><i class="fa-solid fa-calendar-days mr-2"></i>Jadwal Rilis Anime</h2>
-            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-sm">
-                <button onclick="loadSchedule('monday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Senin</button>
-                <button onclick="loadSchedule('tuesday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Selasa</button>
-                <button onclick="loadSchedule('wednesday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Rabu</button>
-                <button onclick="loadSchedule('thursday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Kamis</button>
-                <button onclick="loadSchedule('friday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Jumat</button>
-                <button onclick="loadSchedule('saturday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Sabtu</button>
-                <button onclick="loadSchedule('sunday')" class="px-4 py-2 bg-[#1f2937] rounded-lg hover:bg-purple-600 transition text-white">Minggu</button>
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 animate-fade-in">
+        <!-- Jadwal Rilis Slider -->
+        <section class="mb-8 bg-[#111827]/40 p-4 rounded-2xl border border-gray-800/50 backdrop-blur-md">
+            <h2 class="text-xs font-bold uppercase tracking-widest mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-alt text-purple-400 animate-pulse"></i> Jadwal Update Hari Ini
+            </h2>
+            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+                <button onclick="loadSchedule('monday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Senin</button>
+                <button onclick="loadSchedule('tuesday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Selasa</button>
+                <button onclick="loadSchedule('wednesday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Rabu</button>
+                <button onclick="loadSchedule('thursday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Kamis</button>
+                <button onclick="loadSchedule('friday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Jumat</button>
+                <button onclick="loadSchedule('saturday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Sabtu</button>
+                <button onclick="loadSchedule('sunday')" class="day-btn px-4 py-2 bg-[#1f2937]/40 hover:bg-purple-600 rounded-xl transition duration-300 font-medium border border-gray-800/40 text-gray-300 hover:text-white">Minggu</button>
             </div>
         </section>
 
-        <h2 id="section-title" class="text-xl font-extrabold mb-6 border-l-4 border-purple-500 pl-3">Anime Terbaru</h2>
+        <!-- Section Title -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="section-title" class="text-lg font-black tracking-wide border-l-4 border-purple-500 pl-3">Update Episode Terbaru</h2>
+        </div>
         
-        <div id="loading" class="flex justify-center items-center py-20 hidden">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <!-- Loading -->
+        <div id="loading" class="flex justify-center items-center py-24 hidden">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
         </div>
 
-        <div id="anime-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+        <!-- Anime HD Grid -->
+        <div id="anime-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5"></div>
 
         <!-- Pagination -->
-        <div id="pagination" class="flex justify-center gap-4 mt-10">
-            <button id="prev-page" class="px-5 py-2 bg-[#111827] border border-gray-800 rounded-lg hover:bg-purple-600 transition">Prev</button>
-            <span id="page-num" class="self-center font-bold text-purple-400 bg-[#111827] px-4 py-2 border border-gray-800 rounded-lg">Page 1</span>
-            <button id="next-page" class="px-5 py-2 bg-[#111827] border border-gray-800 rounded-lg hover:bg-purple-600 transition">Next</button>
+        <div id="pagination" class="flex justify-center gap-3 mt-12">
+            <button id="prev-page" class="px-5 py-2.5 bg-[#111827]/80 border border-gray-800 rounded-xl hover:bg-purple-600 hover:border-purple-500 transition duration-300 text-xs font-bold">Prev</button>
+            <span id="page-num" class="self-center font-bold text-xs text-purple-400 bg-[#111827]/80 px-4 py-2.5 border border-gray-800 rounded-xl">Page 1</span>
+            <button id="next-page" class="px-5 py-2.5 bg-[#111827]/80 border border-gray-800 rounded-xl hover:bg-purple-600 hover:border-purple-500 transition duration-300 text-xs font-bold">Next</button>
         </div>
     </main>
 
     <script src="config.js"></script>
     <script>
+        document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
+        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         let currentPage = 1;
         const container = document.getElementById('anime-container');
         const loading = document.getElementById('loading');
         const sectionTitle = document.getElementById('section-title');
         const pagination = document.getElementById('pagination');
+
+        // Nav User Status Checker
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+                supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single().then(({ data }) => {
+                    if (data) {
+                        document.getElementById('nav-user-zone').innerHTML = `
+                            <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl hover:border-purple-500 transition">
+                                <img src="${data.avatar_url}" class="w-6 h-6 rounded-full object-cover">
+                                <span class="text-xs font-bold text-white">${data.username}</span>
+                            </a>
+                        `;
+                    }
+                });
+            }
+        });
 
         async function apiRequest(endpoint) {
             loading.classList.remove('hidden');
@@ -78,23 +127,22 @@
                 loading.classList.add('hidden');
                 return data.status ? data.result : null;
             } catch (err) {
-                console.error(err);
                 loading.classList.add('hidden');
-                container.innerHTML = `<p class="text-red-500 col-span-full text-center py-10">Gagal mengambil data server.</p>`;
                 return null;
             }
         }
 
         async function loadTerbaru(page = 1) {
             pagination.classList.remove('hidden');
-            sectionTitle.innerText = "Anime Terbaru";
+            sectionTitle.innerText = "Update Episode Terbaru";
             const res = await apiRequest(`/terbaru.php?page=${page}`);
             if(res && res.anime_list) renderCards(res.anime_list, 'terbaru');
         }
 
         async function loadSchedule(day) {
             pagination.classList.add('hidden');
-            sectionTitle.innerText = `Jadwal Rilis: ${day.toUpperCase()}`;
+            const days = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
+            sectionTitle.innerText = `Jadwal Rilis: Hari ${days[day]}`;
             const res = await apiRequest(`/schedule.php?day=${day}`);
             if(res && res.raw_data) renderCards(res.raw_data, 'schedule');
         }
@@ -108,28 +156,24 @@
 
         function renderCards(items, type) {
             if(!items || items.length === 0) {
-                container.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10">Tidak ada anime yang ditemukan.</p>`;
+                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan kiriman data anime.</p>`;
                 return;
             }
             container.innerHTML = items.map(anime => {
                 const title = anime.title;
                 const img = anime.image || anime.featured_img_src;
-                const targetUrl = anime.url;
-
-                // Jika diklik di menu Terbaru, ia berupa link episode langsung, arahkan ke watch.html
-                // Jika dari search / schedule, ia berupa link info anime, arahkan ke detail.html
-                const href = (type === 'terbaru') ? `watch.html?episodeUrl=${encodeURIComponent(targetUrl)}` : `detail.html?animeUrl=${encodeURIComponent(targetUrl)}`;
+                const href = (type === 'terbaru') ? `watch.html?episodeUrl=${encodeURIComponent(anime.url)}` : `detail.html?animeUrl=${encodeURIComponent(anime.url)}`;
 
                 return `
-                    <a href="${href}" class="anime-card bg-[#111827]/80 rounded-lg overflow-hidden border border-gray-800 flex flex-col group transition shadow-lg">
+                    <a href="${href}" class="group bg-[#111827]/40 rounded-2xl overflow-hidden border border-gray-800/80 hover:border-purple-500/60 flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-950/20 backdrop-blur-md">
                         <div class="relative overflow-hidden aspect-[3/4]">
-                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-500" loading="lazy">
-                            ${anime.episodes ? `<span class="absolute bottom-2 right-2 bg-black/80 text-[11px] px-2 py-0.5 rounded text-purple-400 font-semibold border border-gray-800">Ep ${anime.episodes}</span>` : ''}
-                            ${anime.score ? `<span class="absolute top-2 left-2 bg-yellow-600 text-[10px] font-bold px-2 py-0.5 rounded shadow"><i class="fa-solid fa-star mr-1"></i>${anime.score}</span>` : ''}
+                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" loading="lazy">
+                            ${anime.episodes ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${anime.episodes}</span>` : ''}
+                            ${anime.score ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${anime.score}</span>` : ''}
                         </div>
-                        <div class="p-3 flex-1 flex flex-col justify-between bg-[#111827]/40">
-                            <h3 class="text-sm font-bold line-clamp-2 group-hover:text-purple-400 transition">${title}</h3>
-                            ${anime.released ? `<p class="text-[11px] text-gray-500 mt-1">${anime.released}</p>` : ''}
+                        <div class="p-3.5 flex-1 flex flex-col justify-between bg-gradient-to-t from-[#111827]/90 to-[#111827]/30">
+                            <h3 class="text-xs font-bold line-clamp-2 text-gray-200 group-hover:text-purple-400 transition duration-300">${title}</h3>
+                            ${anime.released ? `<p class="text-[10px] text-gray-500 mt-1.5 font-medium"><i class="fa-regular fa-clock mr-1"></i>${anime.released}</p>` : ''}
                         </div>
                     </a>
                 `;
@@ -137,13 +181,11 @@
         }
 
         document.getElementById('search-btn').addEventListener('click', () => {
-            const q = document.getElementById('search-input').value;
-            if(q.trim()) searchAnime(q);
+            const q = document.getElementById('search-input').value; if(q.trim()) searchAnime(q);
         });
         document.getElementById('search-input').addEventListener('keypress', (e) => {
             if(e.key === 'Enter' && e.target.value.trim()) searchAnime(e.target.value);
         });
-
         document.getElementById('prev-page').addEventListener('click', () => {
             if(currentPage > 1) { currentPage--; document.getElementById('page-num').innerText = `Page ${currentPage}`; loadTerbaru(currentPage); }
         });

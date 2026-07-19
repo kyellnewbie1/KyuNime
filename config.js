@@ -1,9 +1,8 @@
 const CONFIG = {
-    API_BASE: "https://api-nanas.my.id/api/nonton/samehadaku",
-    
-    // TEMPAT GANTI BACKGROUND LEWAT CODINGAN (Masukkan URL Gambar di sini)
-    // Jika dikosongkan "", website akan otomatis menggunakan warna dark bawaan yang elegan.
-    BG_URL: "https://files.catbox.moe/rijuxb.jpg" 
+    API_BASE: "https://v2.samehadaku.how", // Menggunakan base domain API Samehadaku kamu
+    SUPABASE_URL: "https://rpgustndncsmxkfyfrkg.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwZ3VzdG5kbmNzbXhrZnlmcmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0MzM4NjgsImV4cCI6MjEwMDAwOTg2OH0.1rWms-Ms4hcOB6L1HH6mEva6lrdDo2JGdR3KMYtTH4A",
+    BG_URL: "https://files.catbox.moe/rijuxb.jpg" // Ganti URL ini jika ingin mengubah gambar background web
 };
 
 // Fungsi otomatis untuk memasang background ke seluruh halaman website
