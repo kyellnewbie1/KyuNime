@@ -19,15 +19,16 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Efek Kilau RGB Khusus Akun Owner */
+        /* Efek Bling-Bling Merah Neon Khusus Akun Owner */
         .owner-glow {
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(236, 72, 153, 0.6);
-            animation: rgbGlow 3s infinite alternate;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.9), 0 0 20px rgba(220, 38, 38, 0.6);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4), inset 0 0 8px rgba(239, 68, 68, 0.3);
+            animation: redBling 2s infinite alternate;
         }
-        @keyframes rgbGlow {
-            0% { color: #f87171; }
-            50% { color: #ec4899; }
-            100% { color: #a855f7; }
+        @keyframes redBling {
+            0% { border-color: rgba(239, 68, 68, 0.5); transform: scale(1); }
+            50% { border-color: rgba(248, 113, 113, 0.9); }
+            100% { border-color: rgba(220, 38, 38, 0.6); transform: scale(1.03); }
         }
     </style>
 </head>
@@ -53,7 +54,7 @@
             <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
         </div>
 
-        <!-- 1. KOTAK LOGIN / DAFTAR (DISEMBUNYIKAN JIKA SUDAH LOGIN) -->
+        <!-- 1. KOTAK LOGIN / DAFTAR -->
         <div id="auth-box" class="hidden bg-[#111827]/60 border border-gray-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl">
             <h2 id="auth-title" class="text-lg font-black text-white text-center mb-1">Selamat Datang Wokk!</h2>
             <p id="auth-desc" class="text-[11px] text-gray-500 text-center mb-6">Silakan masuk atau buat akun baru untuk akses streaming.</p>
@@ -80,11 +81,11 @@
             </div>
         </div>
 
-        <!-- 2. KOTAK DASHBOARD PROFIL (MUNCUL JIKA SUDAH LOGIN) -->
+        <!-- 2. KOTAK DASHBOARD PROFIL -->
         <div id="profile-box" class="hidden bg-[#111827]/60 border border-gray-800/80 rounded-3xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden text-center">
             <!-- Badge Role Premium -->
             <div class="absolute top-4 right-4">
-                <span id="user-role" class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-800 text-gray-400 border border-gray-700/60">
+                <span id="user-role" class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-800 text-gray-400 border border-gray-700/60 transition-all duration-300">
                     Memuat...
                 </span>
             </div>
@@ -101,7 +102,7 @@
             <!-- Level & XP Status Bar -->
             <div class="mt-6 bg-[#1f2937]/40 border border-gray-800 p-4 rounded-2xl text-left space-y-3">
                 <div class="flex justify-between text-[11px] font-bold">
-                    <span class="text-gray-400"><i class="fa-solid fa-medal text-yellow-500 mr-1"></i> Level <span id="user-level">1</span></span>
+                    <span class="text-gray-400"><i class="fa-solid fa-medal text-yellow-500 mr-1"></i> Level <span id="user-level" class="transition-all duration-300">1</span></span>
                     <span class="text-purple-400"><span id="user-xp">0</span> / 100 XP</span>
                 </div>
                 <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
@@ -121,7 +122,6 @@
     <script>
         document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
         
-        // AMAN: Gunakan window.supabase agar tidak bentrok atau crash di mobile
         const supabaseProfile = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
         let isLoginMode = true;
@@ -134,7 +134,6 @@
             document.getElementById('btn-toggle').innerText = isLoginMode ? 'Belum punya akun? Daftar Baru Disini' : 'Sudah punya akun? Masuk Disini';
         }
 
-        // Fungsi Utama Autentikasi (Login / Daftar)
         async function handleAuth() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value.trim();
@@ -148,7 +147,6 @@
             document.getElementById('btn-primary').disabled = true;
 
             if (isLoginMode) {
-                // PROSES MASUK
                 const { data, error } = await supabaseProfile.auth.signInWithPassword({ email, password });
                 if (error) {
                     alert('Gagal Masuk: ' + error.message);
@@ -158,7 +156,6 @@
                     checkUserSession();
                 }
             } else {
-                // PROSES DAFTAR
                 const { data, error } = await supabaseProfile.auth.signUp({ email, password });
                 if (error) {
                     alert('Gagal Daftar: ' + error.message);
@@ -173,7 +170,6 @@
             }
         }
 
-        // Cek Status Sesi User Saat Ini
         async function checkUserSession() {
             document.getElementById('profile-loading').classList.remove('hidden');
             document.getElementById('auth-box').classList.add('hidden');
@@ -184,7 +180,6 @@
             document.getElementById('profile-loading').classList.add('hidden');
 
             if (user) {
-                // Tarik detail profil asli dari tabel database 'profiles'
                 const { data: profile, error } = await supabaseProfile
                     .from('profiles')
                     .select('*')
@@ -192,42 +187,47 @@
                     .single();
 
                 if (profile) {
-                    // Terapkan Data Profil ke UI HTML
                     document.getElementById('user-username').innerText = `@${profile.username || 'otaku'}`;
                     document.getElementById('user-avatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`;
                     document.getElementById('user-bio').innerText = `"${profile.bio || 'Hai, aku seorang Otaku!'}"`;
-                    document.getElementById('user-level').innerText = profile.level || 1;
                     document.getElementById('user-xp').innerText = profile.xp || 0;
                     
-                    // Set persentase Progress Bar XP
+                    // FIX LOGIC: Jika level di database bernilai 999999, render teks "Unlimited ♾️" plus animasi gradasi
+                    const levelBadge = document.getElementById('user-level');
+                    if (profile.level === 999999) {
+                        levelBadge.innerText = "Unlimited ♾️";
+                        levelBadge.className = "font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-amber-400 animate-pulse";
+                    } else {
+                        levelBadge.innerText = profile.level || 1;
+                        levelBadge.className = "font-bold text-white";
+                    }
+                    
                     const xpPercent = Math.min(profile.xp || 0, 100);
                     document.getElementById('user-xp-bar').style.width = `${xpPercent}%`;
 
                     // Handle Tampilan Badge Khusus Owner vs User Biasa
                     const roleBadge = document.getElementById('user-role');
-                    roleBadge.innerText = profile.role || 'User Biasa';
                     
                     if (profile.role === 'Owner') {
-                        roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-red-950/80 text-red-400 border border-red-500/50 shadow-md owner-glow";
-                        roleBadge.innerHTML = `<i class="fa-solid fa-crown text-amber-400 mr-1 animate-bounce"></i> Owner`;
+                        // Efek Bling-Bling Merah Berkedip Mewah
+                        roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-red-950/80 text-red-400 border border-red-500/60 shadow-lg owner-glow flex items-center gap-1";
+                        roleBadge.innerHTML = `<i class="fa-solid fa-crown text-amber-400 animate-bounce"></i> Owner`;
                     } else {
                         roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-800 text-gray-400 border border-gray-700/60";
+                        roleBadge.innerText = profile.role || 'User Biasa';
                     }
 
                     document.getElementById('profile-box').classList.remove('hidden');
                 } else {
-                    // Jaga-jaga jika tabel profiles delay merespon trigger barunya
                     document.getElementById('user-username').innerText = user.email.split('@')[0];
                     document.getElementById('user-role').innerText = 'User Biasa';
                     document.getElementById('profile-box').classList.remove('hidden');
                 }
             } else {
-                // Jika belum masuk, buka kotak form pendaftaran/login
                 document.getElementById('auth-box').classList.remove('hidden');
             }
         }
 
-        // Fungsi Logout / Keluar
         async function handleLogout() {
             if (confirm('Yakin ingin keluar dari akun KyuNimeID kamu, wok?')) {
                 await supabaseProfile.auth.signOut();
@@ -235,7 +235,6 @@
             }
         }
 
-        // Jalankan pemeriksaan status akun secara instan saat halaman dibuka
         checkUserSession();
     </script>
 </body>
