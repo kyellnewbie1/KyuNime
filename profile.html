@@ -186,31 +186,28 @@
                 document.getElementById('display-exp').innerText = profile.exp || 0;
                 
                 // --- FITUR BACKGROUND PER AKUN / DEFAULT VIA CONFIG.JS ---
-                // --- FITUR BACKGROUND PER AKUN / DEFAULT VIA CONFIG.JS ---
-if (profile.background_url && profile.background_url.trim() !== "") {
-    document.body.style.backgroundImage = `url('${profile.background_url}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-} else if (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_BACKGROUND) {
-    document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-}
+                if (profile.background_url && profile.background_url.trim() !== "") {
+                    document.body.style.backgroundImage = `url('${profile.background_url}')`;
+                    document.body.style.backgroundSize = "cover";
+                    document.body.style.backgroundPosition = "center";
+                } else if (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_BACKGROUND) {
+                    document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
+                    document.body.style.backgroundSize = "cover";
+                    document.body.style.backgroundPosition = "center";
+                }
 
-// --- MEMUAT BANNER KUSTOM (LEBIH AMAN) ---
-const bannerEl = document.getElementById('profile-banner');
-if (profile.banner_url && profile.banner_url.trim() !== "") {
-    // Hapus class gradien bawaan agar tidak menutupi gambar kustom
-    bannerEl.classList.remove('bg-gradient-to-r', 'from-purple-900/50', 'via-gray-900', 'to-black');
-    bannerEl.style.backgroundImage = `url('${profile.banner_url}')`;
-    bannerEl.style.backgroundSize = "cover";
-    bannerEl.style.backgroundPosition = "center";
-} else {
-    // Kembalikan gradien bawaan jika link kosong
-    bannerEl.style.backgroundImage = '';
-    bannerEl.classList.add('bg-gradient-to-r', 'from-purple-900/50', 'via-gray-900', 'to-black');
-}
-
+                // --- MEMUAT BANNER KUSTOM (LEBIH AMAN) ---
+                const bannerEl = document.getElementById('profile-banner');
+                if (profile.banner_url && profile.banner_url.trim() !== "") {
+                    // Hapus class gradien bawaan agar tidak menutupi gambar kustom
+                    bannerEl.classList.remove('bg-gradient-to-r', 'from-purple-900/50', 'via-gray-900', 'to-black');
+                    bannerEl.style.backgroundImage = `url('${profile.banner_url}')`;
+                    bannerEl.style.backgroundSize = "cover";
+                    bannerEl.style.backgroundPosition = "center";
+                } else {
+                    // Kembalikan gradien bawaan jika link kosong
+                    bannerEl.style.backgroundImage = '';
+                    bannerEl.classList.add('bg-gradient-to-r', 'from-purple-900/50', 'via-gray-900', 'to-black');
                 }
 
                 const date = new Date(profile.created_at);
