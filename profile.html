@@ -15,6 +15,16 @@
             animation: rgb-text 3s ease infinite; font-weight: 900;
         }
         @keyframes rgb-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        /* EFEK BLING-BLING NEBULA COSMIC UNTUK BREAKER */
+        .role-breaker {
+            background: linear-gradient(45deg, #a855f7, #ec4899, #6366f1, #06b6d4, #a855f7);
+            background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: nebula-glow 3s ease infinite; font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+        }
+        @keyframes nebula-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
         .glass-panel { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     </style>
 </head>
@@ -129,8 +139,16 @@
                 document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
 
                 const roleSpan = document.getElementById('profile-role');
-                roleSpan.innerText = profile.role === 'owner' ? '👑 Owner' : 'Member';
-                roleSpan.className = profile.role === 'owner' ? 'role-owner' : 'text-blue-400 font-bold';
+                if (profile.role === 'owner') {
+                    roleSpan.innerText = '👑 Owner';
+                    roleSpan.className = 'role-owner';
+                } else if (profile.role === 'Breaker') {
+                    roleSpan.innerText = '🌌 Breaker';
+                    roleSpan.className = 'role-breaker';
+                } else {
+                    roleSpan.innerText = 'Member';
+                    roleSpan.className = 'text-blue-400 font-bold';
+                }
 
                 loadFriends();
             }
