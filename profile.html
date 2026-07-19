@@ -4,157 +4,245 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Saya - KyuAnime</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        body { background-color: #0b0f19; color: #e2e8f0; }
         .role-owner {
             background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rgb-text 3s ease infinite;
-            font-weight: 900;
+            background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: rgb-text 3s ease infinite; font-weight: 900;
         }
         @keyframes rgb-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .glass-panel { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200">
+<body class="antialiased selection:bg-purple-500">
 
-    <nav class="bg-[#111827]/90 border-b border-gray-800 sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
-            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-bold transition"><i class="fa-solid fa-power-off mr-2"></i>Logout</button>
+    <nav class="bg-[#111827]/90 border-b border-gray-800 sticky top-0 z-50 px-4 py-3 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider hover:scale-105 transition">
+                Kyu<span class="text-white">Anime</span>
+            </a>
+            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-500 px-4 py-2 rounded-xl font-bold transition shadow-lg shadow-red-500/20">
+                <i class="fa-solid fa-power-off mr-2"></i>Logout
+            </button>
         </div>
     </nav>
 
     <main class="max-w-5xl mx-auto px-4 py-10">
-        <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800 p-8 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900 via-gray-900 to-black z-0 border-b border-gray-800"></div>
+        
+        <div class="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden mb-8">
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black z-0 border-b border-gray-800"></div>
             
             <div class="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6 mt-10">
-                <!-- Avatar -->
                 <div class="relative group cursor-pointer">
-                    <img id="profile-img" src="" class="w-32 h-32 rounded-full border-4 border-[#0b0f19] object-cover bg-gray-800 shadow-xl">
+                    <img id="profile-img" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border-4 border-[#0b0f19] object-cover bg-gray-800 shadow-xl transition">
                     <label for="avatar-upload" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
                         <i class="fa-solid fa-camera text-2xl text-white"></i>
                     </label>
                     <input type="file" id="avatar-upload" accept="image/*" class="hidden">
                 </div>
 
-                <!-- Info User & EXP -->
                 <div class="text-center md:text-left flex-1 mb-2 w-full">
                     <div class="flex items-center justify-center md:justify-start gap-3">
                         <h1 id="profile-name" class="text-3xl font-black text-white">Memuat...</h1>
-                        <span id="profile-id" class="bg-gray-800 px-2 py-1 rounded text-xs text-gray-400 font-mono">#--</span>
+                        <span id="profile-id" class="bg-purple-900/50 border border-purple-500/30 px-2 py-1 rounded text-xs text-purple-300 font-mono font-bold shadow-inner">#--</span>
                     </div>
                     <p class="mt-1 text-sm uppercase tracking-widest mb-4"><span id="profile-role"></span></p>
                     
-                    <!-- Progress Bar Level -->
-                    <div class="bg-[#1f2937] p-3 rounded-lg border border-gray-700 max-w-md mx-auto md:mx-0">
-                        <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-purple-400" id="display-level">Level --</span>
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5 max-w-md mx-auto md:mx-0 shadow-inner">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span class="text-purple-400 uppercase tracking-widest" id="display-level">Level --</span>
                             <span class="text-green-400"><span id="display-exp">0</span> EXP</span>
                         </div>
-                        <div class="w-full bg-gray-800 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-purple-500 to-green-400 h-2 rounded-full" style="width: 100%"></div>
+                        <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden border border-white/5">
+                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full w-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
                         </div>
-                        <p class="text-[10px] text-gray-500 mt-1">Nonton lebih banyak anime untuk naik level!</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <!-- Teman -->
-            <div class="bg-[#111827]/40 rounded-xl border border-gray-800 p-6">
-                <h3 class="text-lg font-bold border-l-4 border-blue-500 pl-3 mb-4"><i class="fa-solid fa-user-group mr-2"></i>Daftar Teman</h3>
-                <div id="friends-list" class="space-y-3">
-                    <p class="text-gray-500 text-sm italic">Memuat daftar teman...</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="glass-panel rounded-3xl border border-gray-800 p-6 flex flex-col h-full">
+                <h3 class="text-lg font-black text-white mb-4 flex items-center"><i class="fa-solid fa-user-group text-blue-500 mr-2"></i>Sistem Pertemanan</h3>
+                
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="search-friend-id" placeholder="Masukkan ID (contoh: 12345)" class="flex-1 bg-black/40 text-sm text-white px-4 py-2.5 rounded-xl border border-gray-700/50 focus:outline-none focus:border-purple-500 transition shadow-inner">
+                    <button onclick="searchFriend()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <div id="search-result" class="hidden bg-blue-900/20 border border-blue-500/30 p-4 rounded-2xl mb-6 transition"></div>
+
+                <div class="w-full h-px bg-gray-800 mb-6"></div>
+
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Daftar Teman Kamu</h4>
+                <div id="friends-list" class="space-y-3 flex-1 overflow-y-auto pr-2 max-h-60">
+                    <div class="text-center py-4"><div class="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div></div>
                 </div>
             </div>
 
-            <!-- Komentar -->
-            <div class="bg-[#111827]/40 rounded-xl border border-gray-800 p-6">
-                <h3 class="text-lg font-bold border-l-4 border-green-500 pl-3 mb-4"><i class="fa-solid fa-gem mr-2"></i>Statistik</h3>
-                <ul class="text-sm text-gray-300 space-y-2">
-                    <li class="flex justify-between border-b border-gray-700/50 pb-2">
-                        <span>Bergabung Sejak</span>
-                        <span id="stat-join" class="font-bold text-white">-</span>
+            <div class="glass-panel rounded-3xl border border-gray-800 p-6">
+                <h3 class="text-lg font-black text-white mb-4 flex items-center"><i class="fa-solid fa-gem text-green-500 mr-2"></i>Statistik Akun</h3>
+                <ul class="text-sm text-gray-300 space-y-4">
+                    <li class="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/5">
+                        <span class="font-bold text-gray-400"><i class="fa-solid fa-calendar-days mr-2"></i>Bergabung Sejak</span>
+                        <span id="stat-join" class="font-black text-white">-</span>
                     </li>
-                    <li class="flex justify-between pb-2">
-                        <span>Status Akun</span>
-                        <span class="font-bold text-green-400">Aktif</span>
+                    <li class="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/5">
+                        <span class="font-bold text-gray-400"><i class="fa-solid fa-shield-halved mr-2"></i>Status Akun</span>
+                        <span class="font-black text-green-400 tracking-widest uppercase">Aktif</span>
+                    </li>
+                    <li class="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/5">
+                        <span class="font-bold text-gray-400"><i class="fa-solid fa-film mr-2"></i>Total Anime Ditonton</span>
+                        <span class="font-black text-purple-400">Dalam Pengembangan</span>
                     </li>
                 </ul>
             </div>
+
         </div>
     </main>
 
     <script src="config.js"></script>
     <script>
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-let currentUser = null;
+        let currentUser = null;
 
-async function loadProfile() {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
-    if (error || !session) return window.location.href = 'auth.html';
+        async function loadProfile() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if (error || !session) return window.location.href = 'auth.html';
 
-    currentUser = session.user;
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+            currentUser = session.user;
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
 
-    if (profile) {
-        document.getElementById('profile-name').innerText = profile.full_name;
-        document.getElementById('profile-id').innerText = `#${profile.user_id}`;
-        document.getElementById('profile-img').src = profile.avatar_url;
-        document.getElementById('display-level').innerText = `Level ${profile.level}`;
-        document.getElementById('display-exp').innerText = profile.exp;
-        
-        const date = new Date(profile.created_at);
-        document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
+            if (profile) {
+                document.getElementById('profile-name').innerText = profile.full_name;
+                document.getElementById('profile-id').innerText = `#${profile.user_id}`;
+                document.getElementById('profile-img').src = profile.avatar_url || 'https://via.placeholder.com/150';
+                document.getElementById('display-level').innerText = `Level ${profile.level}`;
+                document.getElementById('display-exp').innerText = profile.exp;
+                
+                const date = new Date(profile.created_at);
+                document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
 
-        const roleSpan = document.getElementById('profile-role');
-        roleSpan.innerText = profile.role === 'owner' ? '👑 Owner' : 'Member';
-        roleSpan.className = profile.role === 'owner' ? 'role-owner' : 'text-blue-400 font-bold';
+                const roleSpan = document.getElementById('profile-role');
+                roleSpan.innerText = profile.role === 'owner' ? '👑 Owner' : 'Member';
+                roleSpan.className = profile.role === 'owner' ? 'role-owner' : 'text-blue-400 font-bold';
 
-        loadFriends();
-    }
-}
+                loadFriends();
+            }
+        }
 
-async function loadFriends() {
-    const { data } = await supabaseClient
-        .from('friends')
-        .select(`id, status, requester_id, receiver_id`)
-        .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+        // FUNGSI PENCARIAN TEMAN VIA ID
+        async function searchFriend() {
+            const searchId = document.getElementById('search-friend-id').value.trim();
+            const resultBox = document.getElementById('search-result');
+            
+            if(!searchId) return;
 
-    const listEl = document.getElementById('friends-list');
-    
-    if(!data || data.length === 0) {
-        listEl.innerHTML = '<p class="text-gray-500 text-sm">Belum ada teman. Tambahkan teman dari kolom komentar!</p>';
-        return;
-    }
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = '<p class="text-sm text-gray-400 animate-pulse">Mencari...</p>';
 
-    listEl.innerHTML = data.map(f => {
-        const isRequester = f.requester_id === currentUser.id;
-        const badge = f.status === 'accepted' 
-            ? '<span class="text-green-400 text-xs"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
-            : (isRequester ? '<span class="text-yellow-400 text-xs">Menunggu...</span>' : '<button class="bg-blue-600 text-white text-xs px-2 py-1 rounded">Terima</button>');
-        
-        return `
-        <div class="flex items-center justify-between bg-[#1f2937]/50 p-3 rounded-lg border border-gray-700">
-            <span class="text-sm font-bold text-white"><i class="fa-solid fa-user-circle text-gray-400 mr-2"></i> User Rahasia</span>
-            ${badge}
-        </div>`;
-    }).join('');
-}
+            // Cari di tabel profiles berdasarkan user_id (Bukan UUID panjang, tapi ID pendeknya)
+            const { data, error } = await supabaseClient.from('profiles').select('*').eq('user_id', searchId).single();
 
-async function logout() {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'index.html';
-}
+            if (error || !data) {
+                resultBox.innerHTML = '<p class="text-sm font-bold text-red-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i>User dengan ID tersebut tidak ditemukan.</p>';
+                return;
+            }
 
-loadProfile();
+            if (data.id === currentUser.id) {
+                resultBox.innerHTML = '<p class="text-sm font-bold text-yellow-400"><i class="fa-solid fa-face-smile-wink mr-2"></i>Itu ID kamu sendiri!</p>';
+                return;
+            }
 
+            resultBox.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="${data.avatar_url}" class="w-10 h-10 rounded-full border border-blue-500 object-cover">
+                        <div>
+                            <p class="text-sm font-bold text-white">${data.full_name}</p>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest">Lv.${data.level}</p>
+                        </div>
+                    </div>
+                    <button onclick="sendFriendRequest('${data.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition">Tambah</button>
+                </div>
+            `;
+        }
+
+        // FUNGSI KIRIM REQUEST TEMAN
+        async function sendFriendRequest(targetId) {
+            const { error } = await supabaseClient.from('friends').insert({
+                requester_id: currentUser.id,
+                receiver_id: targetId,
+                status: 'pending'
+            });
+
+            if(error) {
+                alert("Kamu sudah mengirim request ke user ini atau sudah berteman.");
+            } else {
+                alert("Permintaan pertemanan berhasil dikirim!");
+                document.getElementById('search-result').classList.add('hidden');
+                document.getElementById('search-friend-id').value = '';
+            }
+        }
+
+        async function loadFriends() {
+            const { data } = await supabaseClient
+                .from('friends')
+                .select(`id, status, requester_id, receiver_id`)
+                .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+            const listEl = document.getElementById('friends-list');
+            
+            if(!data || data.length === 0) {
+                listEl.innerHTML = '<div class="bg-black/30 p-4 rounded-xl text-center border border-white/5"><p class="text-gray-500 text-sm">Belum ada teman. Cari ID temanmu di atas!</p></div>';
+                return;
+            }
+
+            listEl.innerHTML = data.map(f => {
+                const isRequester = f.requester_id === currentUser.id;
+                const badge = f.status === 'accepted' 
+                    ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider border border-green-500/30"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
+                    : (isRequester ? '<span class="text-yellow-400 text-xs font-bold">Menunggu...</span>' : '<button class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition shadow-lg">Terima</button>');
+                
+                return `
+                <div class="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 transition hover:border-white/10">
+                    <span class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-user-astronaut text-purple-400 mr-2 text-lg"></i> User Terhubung</span>
+                    ${badge}
+                </div>`;
+            }).join('');
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Fitur Ganti Avatar (Otomatis ke Base64)
+        document.getElementById('avatar-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) return alert("Ukuran gambar maksimal 2MB.");
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+                document.getElementById('profile-img').src = base64String;
+
+                const { error } = await supabaseClient.from('profiles').update({ avatar_url: base64String }).eq('id', currentUser.id);
+
+                if (error) alert("Gagal update avatar: " + error.message);
+                else loadProfile(); // Refresh Data
+            };
+            reader.readAsDataURL(file);
+        });
+
+        loadProfile();
     </script>
 </body>
 </html>
