@@ -25,7 +25,7 @@
     <!-- Overlay Gelap Kualitas Premium -->
     <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 via-[#0b0f19]/95 to-[#0b0f19] -z-10"></div>
 
-    <!-- PRO NAVBAR (RESPONSIF SMARTPHONE AMAN) -->
+    <!-- PRO NAVBAR -->
     <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <!-- Baris Atas: Logo & Menu Cepat -->
@@ -36,7 +36,7 @@
                 </div>
             </div>
             
-            <!-- Baris Bawah/Samping: Search & Tombol Profil (Anti Penyok) -->
+            <!-- Baris Bawah/Samping: Search & Tombol Profil -->
             <div class="flex items-center gap-2 w-full sm:w-auto">
                 <div class="relative flex-1 sm:flex-none sm:w-64 group">
                     <input type="text" id="search-input" placeholder="Cari anime..." class="w-full bg-[#1f2937]/60 text-xs text-white pl-4 pr-10 py-2.5 rounded-xl border border-gray-800 focus:outline-none focus:border-purple-500 focus:bg-[#1f2937]/90 transition duration-300">
@@ -95,9 +95,10 @@
 
     <script src="config.js"></script>
     <script>
+        // Set background dari konfigurasi global
         document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
         
-        // FIX: Gunakan objek window agar tidak crash saat inisialisasi CDN Supabase
+        // Inisialisasi Klien Supabase secara Global
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
         let currentPage = 1;
@@ -122,121 +123,7 @@
             }
         });
 
-                async function apiRequest(endpoint) {
-            loading.classList.remove('hidden');
-            container.innerHTML = '';
-            try {
-                const res = await fetch(`${CONFIG.API_BASE}${endpoint}`);
-                const data = await res.json();
-                loading.classList.add('hidden');
-                // Samehadaku biasanya langsung mengembalikan data atau lewat objek 'data'/'result'
-                return data;
-            } catch (err) {
-                loading.classList.add('hidden');
-                return null;
-            }
-        }
-
-        async function loadTerbaru(page = 1) {
-            pagination.classList.remove('hidden');
-            sectionTitle.innerText = "Update Episode Terbaru";
-            // SAMEHADAKU: Endpoint biasanya /recent-epps atau /anime/recent
-            const res = await apiRequest(`/anime/recent?page=${page}`); 
-            if (res) {
-                // Menyesuaikan jika Samehadaku menggunakan key 'data' atau 'result'
-                const list = res.data || res.result || res;
-                renderCards(list, 'terbaru');
-            }
-        }
-
-        async function loadSchedule(day) {
-            pagination.classList.add('hidden');
-            const days = {monday:'monday', tuesday:'tuesday', wednesday:'wednesday', thursday:'thursday', friday:'friday', saturday:'saturday', sunday:'sunday'};
-            const daysIndo = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
-            sectionTitle.innerText = `Jadwal Rilis: Hari ${daysIndo[day]}`;
-            
-            // SAMEHADAKU: Endpoint jadwal rilis
-            const res = await apiRequest(`/schedule/${days[day]}`);
-            if (res) {
-                const list = res.data || res.result || res;
-                renderCards(list, 'schedule');
-            }
-        }
-
-        async function searchAnime(query) {
-            pagination.classList.add('hidden');
-            sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
-            
-            // SAMEHADAKU: Endpoint pencarian biasanya /anime?q= atau /search?q=
-            const res = await apiRequest(`/anime?q=${encodeURIComponent(query)}`);
-            if (res) {
-                const list = res.data || res.result || res;
-                renderCards(list, 'search');
-            }
-        }
-
-        function renderCards(items, type) {
-            // Jaga-jaga jika data dibungkus dalam properti anime_list atau sejenisnya
-            if (items && items.anime_list) items = items.anime_list;
-            
-            if (!items || !Array.isArray(items) || items.length === 0) {
-                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan data anime atau endpoint API tidak cocok.</p>`;
-                return;
-            }
-            
-            container.innerHTML = items.map(anime => {
-                const title = anime.title || anime.name;
-                // Menangani flexibilitas nama properti gambar dari API Samehadaku
-                const img = anime.image || anime.thumbnail || anime.featured_img_src || anime.poster;
-                
-                // Menentukan link tujuan (nonton langsung atau ke detail dulu)
-                const href = (type === 'terbaru') 
-                    ? `watch.html?episodeUrl=${encodeURIComponent(anime.url || anime.link)}` 
-                    : `detail.html?animeUrl=${encodeURIComponent(anime.url || anime.link)}`;
-
-                return `
-                    <a href="${href}" class="group bg-[#111827]/40 rounded-2xl overflow-hidden border border-gray-800/80 hover:border-purple-500/60 flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-950/20 backdrop-blur-md">
-                        <div class="relative overflow-hidden aspect-[3/4]">
-                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" loading="lazy">
-                            ${anime.episode || anime.episodes ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${anime.episode || anime.episodes}</span>` : ''}
-                            ${anime.score || anime.rating ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${anime.score || anime.rating}</span>` : ''}
-                        </div>
-                        <div class="p-3.5 flex-1 flex flex-col justify-between bg-gradient-to-t from-[#111827]/90 to-[#111827]/30">
-                            <h3 class="text-xs font-bold line-clamp-2 text-gray-200 group-hover:text-purple-400 transition duration-300">${title}</h3>
-                            ${anime.uploaded_on || anime.released ? `<p class="text-[10px] text-gray-500 mt-1.5 font-medium"><i class="fa-regular fa-clock mr-1"></i>${anime.uploaded_on || anime.released}</p>` : ''}
-                        </div>
-                    </a>
-                `;
-            }).join('');
-        }
-
-
-        document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
-        
-        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        
-        let currentPage = 1;
-        const container = document.getElementById('anime-container');
-        const loading = document.getElementById('loading');
-        const sectionTitle = document.getElementById('section-title');
-        const pagination = document.getElementById('pagination');
-
-        // Nav User Status Checker
-        supabaseClient.auth.getUser().then(({ data: { user } }) => {
-            if (user) {
-                supabaseClient.from('profiles').select('username, avatar_url').eq('id', user.id).single().then(({ data }) => {
-                    if (data) {
-                        document.getElementById('nav-user-zone').innerHTML = `
-                            <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl hover:border-purple-500 transition max-w-[150px]">
-                                <img src="${data.avatar_url}" class="w-6 h-6 rounded-full object-cover flex-shrink-0">
-                                <span class="text-xs font-bold text-white truncate">${data.username}</span>
-                            </a>
-                        `;
-                    }
-                });
-            }
-        });
-
+        // Handler Request Utama API Nanas Proxy
         async function apiRequest(endpoint) {
             loading.classList.remove('hidden');
             container.innerHTML = '';
@@ -252,15 +139,16 @@
             }
         }
 
+        // Memuat Data Episode Terbaru Samehadaku
         async function loadTerbaru(page = 1) {
             pagination.classList.remove('hidden');
             sectionTitle.innerText = "Update Episode Terbaru";
             const res = await apiRequest(`/terbaru.php?page=${page}`);
-            // API Nanas mengembalikan data di dalam objek `.result` atau array `.result`
             const items = res?.result?.anime_list || res?.result || res;
             renderCards(items, 'terbaru');
         }
 
+        // Memuat Jadwal Rilis
         async function loadSchedule(day) {
             pagination.classList.add('hidden');
             const daysIndo = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
@@ -270,6 +158,7 @@
             renderCards(items, 'schedule');
         }
 
+        // Fitur Pencarian Anime
         async function searchAnime(query) {
             pagination.classList.add('hidden');
             sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
@@ -278,6 +167,7 @@
             renderCards(items, 'search');
         }
 
+        // Render Data Menjadi Grid Card HTML Premium
         function renderCards(items, type) {
             if (!items || !Array.isArray(items) || items.length === 0) {
                 container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan data anime. Silakan coba lagi nanti.</p>`;
@@ -287,7 +177,6 @@
                 const title = anime.title || anime.name;
                 const img = anime.image || anime.thumb || anime.thumbnail || anime.featured_img_src;
                 
-                // Mengirimkan parameter URL Samehadaku asli yang di-encode ke watch.html / detail.html
                 const animeUrl = anime.url || anime.link;
                 const href = (type === 'terbaru') 
                     ? `watch.html?episodeUrl=${encodeURIComponent(animeUrl)}` 
@@ -309,6 +198,7 @@
             }).join('');
         }
 
+        // Event Listener Aksi Kontrol
         document.getElementById('search-btn').addEventListener('click', () => {
             const q = document.getElementById('search-input').value; if(q.trim()) searchAnime(q);
         });
@@ -322,7 +212,7 @@
             currentPage++; document.getElementById('page-num').innerText = `Page ${currentPage}`; loadTerbaru(currentPage);
         });
 
-        // Jalankan memuat data terbaru pertama kali
+        // Eksekusi muat data paling pertama saat siap
         loadTerbaru();
     </script>
 </body>
