@@ -25,29 +25,30 @@
     <!-- Overlay Gelap Kualitas Premium -->
     <div class="fixed inset-0 bg-gradient-to-b from-[#0b0f19]/90 via-[#0b0f19]/95 to-[#0b0f19] -z-10"></div>
 
-    <!-- PRO NAVBAR -->
-    <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3 transition-all">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center justify-between w-full md:w-auto gap-6">
+    <!-- PRO NAVBAR (RESPONSIF SMARTPHONE AMAN) -->
+    <nav class="bg-[#111827]/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <!-- Baris Atas: Logo & Menu Cepat -->
+            <div class="flex items-center justify-between w-full sm:w-auto gap-6">
                 <a href="index.html" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 tracking-wider hover:scale-105 transition duration-300">Kyu<span class="text-white">NimeID</span></a>
-                <!-- Nav Links Tambahan -->
-                <div class="hidden sm:flex items-center gap-4 text-xs font-semibold text-gray-400">
-                    <a href="index.html" class="hover:text-purple-400 transition"><i class="fa-solid fa-fire mr-1"></i> Populer</a>
-                    <a href="#" onclick="alert('Fitur Daftar Movie Segera Hadir!')" class="hover:text-purple-400 transition"><i class="fa-solid fa-clapperboard mr-1"></i> Movies</a>
+                <div class="flex items-center gap-4 text-xs font-semibold text-gray-400">
+                    <a href="index.html" class="hover:text-purple-400 text-purple-400 transition"><i class="fa-solid fa-fire mr-1"></i> Populer</a>
                 </div>
             </div>
             
-            <!-- Search & User Control -->
-            <div class="flex items-center justify-between md:justify-end w-full md:w-auto gap-4">
-                <div class="relative w-full sm:w-64 group">
+            <!-- Baris Bawah/Samping: Search & Tombol Profil (Anti Penyok) -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <div class="relative flex-1 sm:flex-none sm:w-64 group">
                     <input type="text" id="search-input" placeholder="Cari anime..." class="w-full bg-[#1f2937]/60 text-xs text-white pl-4 pr-10 py-2.5 rounded-xl border border-gray-800 focus:outline-none focus:border-purple-500 focus:bg-[#1f2937]/90 transition duration-300">
-                    <button id="search-btn" class="absolute right-3 top-3 text-gray-500 group-focus-within:text-purple-400 transition">
+                    <button id="search-btn" class="absolute right-3 top-2.5 text-gray-500 group-focus-within:text-purple-400 transition">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </button>
                 </div>
                 
-                <div id="nav-user-zone">
-                    <a href="profile.html" class="text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-purple-900/30 transition duration-300"><i class="fa-solid fa-user-astronaut mr-1.5"></i>Masuk</a>
+                <div id="nav-user-zone" class="flex-shrink-0">
+                    <a href="profile.html" class="inline-block text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-purple-900/30 whitespace-nowrap transition duration-300">
+                        <i class="fa-solid fa-user-astronaut mr-1.5"></i>Masuk
+                    </a>
                 </div>
             </div>
         </div>
@@ -73,7 +74,7 @@
 
         <!-- Section Title -->
         <div class="flex justify-between items-center mb-6">
-            <h2 id="section-title" class="text-lg font-black tracking-wide border-l-4 border-purple-500 pl-3">Update Episode Terbaru</h2>
+            <h2 id="section-title" class="text-sm font-black tracking-wide border-l-4 border-purple-500 pl-3 uppercase">Update Episode Terbaru</h2>
         </div>
         
         <!-- Loading -->
@@ -95,7 +96,10 @@
     <script src="config.js"></script>
     <script>
         document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
-        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        // FIX: Gunakan objek window agar tidak crash saat inisialisasi CDN Supabase
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
         let currentPage = 1;
         const container = document.getElementById('anime-container');
         const loading = document.getElementById('loading');
@@ -103,14 +107,14 @@
         const pagination = document.getElementById('pagination');
 
         // Nav User Status Checker
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        supabaseClient.auth.getUser().then(({ data: { user } }) => {
             if (user) {
-                supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single().then(({ data }) => {
+                supabaseClient.from('profiles').select('username, avatar_url').eq('id', user.id).single().then(({ data }) => {
                     if (data) {
                         document.getElementById('nav-user-zone').innerHTML = `
-                            <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl hover:border-purple-500 transition">
-                                <img src="${data.avatar_url}" class="w-6 h-6 rounded-full object-cover">
-                                <span class="text-xs font-bold text-white">${data.username}</span>
+                            <a href="profile.html" class="flex items-center gap-2 bg-[#1f2937]/80 border border-gray-800 px-3 py-1.5 rounded-xl hover:border-purple-500 transition max-w-[150px]">
+                                <img src="${data.avatar_url}" class="w-6 h-6 rounded-full object-cover flex-shrink-0">
+                                <span class="text-xs font-bold text-white truncate">${data.username}</span>
                             </a>
                         `;
                     }
@@ -156,7 +160,7 @@
 
         function renderCards(items, type) {
             if(!items || items.length === 0) {
-                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan kiriman data anime.</p>`;
+                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan data anime.</p>`;
                 return;
             }
             container.innerHTML = items.map(anime => {
@@ -193,6 +197,7 @@
             currentPage++; document.getElementById('page-num').innerText = `Page ${currentPage}`; loadTerbaru(currentPage);
         });
 
+        // Jalankan fungsi load data utama otomatis setelah crash diperbaiki
         loadTerbaru();
     </script>
 </body>
