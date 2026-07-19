@@ -17,8 +17,9 @@ async function checkAuthStatus() {
         const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
         
         if(profile) {
+            // FIX: Mengubah profil.html menjadi profile.html agar tidak 404
             userArea.innerHTML = `
-                <a href="profil.html" class="flex items-center gap-2 hover:bg-white/10 p-1.5 rounded-xl transition border border-transparent hover:border-white/20">
+                <a href="profile.html" class="flex items-center gap-2 hover:bg-white/10 p-1.5 rounded-xl transition border border-transparent hover:border-white/20">
                     <img src="${profile.avatar_url}" class="w-9 h-9 rounded-full object-cover border-2 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" alt="Avatar">
                     <span class="text-sm font-bold text-white hidden sm:block">${profile.full_name}</span>
                 </a>
@@ -33,4 +34,5 @@ async function checkAuthStatus() {
     }
 }
 
+// Jalankan otomatis saat file auth.js dimuat di halaman mana pun
 document.addEventListener('DOMContentLoaded', checkAuthStatus);
