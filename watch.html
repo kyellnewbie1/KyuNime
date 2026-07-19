@@ -57,7 +57,10 @@
     <script src="config.js"></script>
     <script>
         document.getElementById('dynamic-bg').style.backgroundImage = `url('${CONFIG.BG_URL}')`;
-        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        // FIX: Inisialisasi window klien Supabase secara tepat agar tidak crash variabel global
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
         const urlParams = new URLSearchParams(window.location.search);
         const episodeUrl = urlParams.get('episodeUrl');
         const slug = episodeUrl ? episodeUrl.replace(/\/$/, '').split('/').pop() : '';
@@ -67,9 +70,9 @@
             if(!episodeUrl) return;
 
             // Load Supabase User
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             if(user) {
-                const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                const { data: prof } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
                 if(prof) {
                     userProfile = prof;
                     renderCommentBox();
@@ -89,6 +92,7 @@
 
                 // Servers Player Button Render
                 const srvBox = document.getElementById('server-list');
+                srvBox.innerHTML = ''; // bersihkan kontainer
                 dl.result.servers.forEach(s => {
                     const b = document.createElement('button');
                     b.className = "px-3 py-1.5 bg-[#1f2937]/50 text-[11px] font-bold rounded-xl border border-gray-800 hover:bg-purple-600 transition text-white";
@@ -114,7 +118,9 @@
                         </div>
                     </div>
                 `).join('');
-            } catch (e) {}
+            } catch (e) {
+                console.error("Gagal memuat link data streaming anime: ", e);
+            }
         }
 
         async function switchStream(id) {
@@ -129,9 +135,10 @@
 
         // --- SISTEM KOMENTAR ---
         function renderCommentBox() {
+            const avatarImg = userProfile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${userProfile.id}`;
             document.getElementById('comment-auth-wrapper').innerHTML = `
                 <div class="flex gap-3">
-                    <img src="${userProfile.avatar_url}" class="w-8 h-8 rounded-full object-cover">
+                    <img src="${avatarImg}" class="w-8 h-8 rounded-full object-cover">
                     <div class="flex-1 space-y-2">
                         <textarea id="comment-text-input" rows="2" placeholder="Tulis komentar kamu tentang episode ini..." class="w-full bg-[#1f2937]/50 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
                         <button onclick="postComment()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow transition">Kirim Komentar</button>
@@ -141,11 +148,11 @@
         }
 
         async function loadComments() {
-            const { data, error } = await supabase.from('comments').select('*').eq('episode_slug', slug).order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('comments').select('*').eq('episode_slug', slug).order('created_at', { ascending: false });
             if(data && data.length > 0) {
                 document.getElementById('comments-container').innerHTML = data.map(c => `
                     <div class="flex gap-3 pt-3">
-                        <img src="${c.avatar_url}" class="w-8 h-8 rounded-full object-cover mt-1">
+                        <img src="${c.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + c.username}" class="w-8 h-8 rounded-full object-cover mt-1">
                         <div>
                             <span class="text-xs font-bold text-purple-400 block">${c.username}</span>
                             <p class="text-xs text-gray-300 mt-0.5">${c.comment_text}</p>
@@ -159,7 +166,7 @@
             const txt = document.getElementById('comment-text-input').value;
             if(!txt.trim()) return;
 
-            const { error } = await supabase.from('comments').insert({
+            const { error } = await supabaseClient.from('comments').insert({
                 episode_slug: slug,
                 user_id: userProfile.id,
                 username: userProfile.username,
@@ -170,21 +177,25 @@
             if(!error) {
                 document.getElementById('comment-text-input').value = '';
                 loadComments();
+            } else {
+                alert("Gagal mengirim komentar: " + error.message);
             }
         }
 
         // --- BONUS XP REWARD ---
         async function triggerXpReward(prof) {
             let nextXp = prof.level * 100;
-            let newXp = prof.xp + 15;
-            let newLevel = prof.level;
+            let newXp = (prof.xp || 0) + 15;
+            let newLevel = prof.level || 1;
+
+            if(newLevel === 999999) return; // Akun level unlimited dilewati
 
             if(newXp >= nextXp) {
                 newXp -= nextXp;
                 newLevel += 1;
                 alert(`🎉 Selamat! Level Otaku kamu naik ke Level ${newLevel}!`);
             }
-            await supabase.from('profiles').update({ xp: newXp, level: newLevel }).eq('id', prof.id);
+            await supabaseClient.from('profiles').update({ xp: newXp, level: newLevel }).eq('id', prof.id);
         }
 
         initWatchPage();

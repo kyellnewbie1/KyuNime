@@ -99,6 +99,34 @@
             <h2 id="user-username" class="text-base font-black text-white">@username</h2>
             <p id="user-bio" class="text-xs text-gray-400 mt-1 px-4 italic">"Membaca data profil..."</p>
 
+            <!-- FORM EDIT PROFIL (Bisa Ganti Foto, Username, Bio Langsung) -->
+            <div id="edit-profile-zone" class="mt-4 border-t border-gray-800/60 pt-4 text-left hidden">
+                <p class="text-[11px] font-bold text-purple-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit Data Profil</p>
+                <div class="space-y-3 text-[11px]">
+                    <div>
+                        <label class="block text-gray-400 mb-1">URL Foto Profil Baru:</label>
+                        <input type="url" id="edit-avatar-url" placeholder="https://domain.com/foto.jpg" class="w-full bg-[#1f2937]/50 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1">Username Baru:</label>
+                        <input type="text" id="edit-username" placeholder="Nama Baru..." class="w-full bg-[#1f2937]/50 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1">Bio Singkat:</label>
+                        <textarea id="edit-bio" rows="2" placeholder="Bio baru kamu..." class="w-full bg-[#1f2937]/50 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="saveProfileChanges()" id="btn-save-profile" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold text-white rounded-xl shadow transition">Simpan</button>
+                        <button onclick="toggleEditZone(false)" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl transition">Batal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Pemicu Tampilkan/Sembunyikan Form Edit -->
+            <div id="edit-toggle-btn-wrapper" class="mt-2">
+                <button onclick="toggleEditZone(true)" class="text-[11px] text-purple-400 hover:text-purple-300 font-semibold underline"><i class="fa-solid fa-user-gear mr-1"></i>Ubah Foto & Biodata</button>
+            </div>
+
             <!-- Level & XP Status Bar -->
             <div class="mt-6 bg-[#1f2937]/40 border border-gray-800 p-4 rounded-2xl text-left space-y-3">
                 <div class="flex justify-between text-[11px] font-bold">
@@ -125,6 +153,7 @@
         const supabaseProfile = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
         let isLoginMode = true;
+        let loggedInUser = null;
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
@@ -132,6 +161,16 @@
             document.getElementById('auth-desc').innerText = isLoginMode ? 'Silakan masuk atau buat akun baru untuk akses streaming.' : 'Daftarkan email aktifmu untuk mulai kumpulkan XP.';
             document.getElementById('btn-primary').innerText = isLoginMode ? 'Masuk Sekarang' : 'Daftar Baru';
             document.getElementById('btn-toggle').innerText = isLoginMode ? 'Belum punya akun? Daftar Baru Disini' : 'Sudah punya akun? Masuk Disini';
+        }
+
+        function toggleEditZone(show) {
+            if(show) {
+                document.getElementById('edit-profile-zone').classList.remove('hidden');
+                document.getElementById('edit-toggle-btn-wrapper').classList.add('hidden');
+            } else {
+                document.getElementById('edit-profile-zone').classList.add('hidden');
+                document.getElementById('edit-toggle-btn-wrapper').classList.remove('hidden');
+            }
         }
 
         async function handleAuth() {
@@ -180,6 +219,7 @@
             document.getElementById('profile-loading').classList.add('hidden');
 
             if (user) {
+                loggedInUser = user;
                 const { data: profile, error } = await supabaseProfile
                     .from('profiles')
                     .select('*')
@@ -192,7 +232,11 @@
                     document.getElementById('user-bio').innerText = `"${profile.bio || 'Hai, aku seorang Otaku!'}"`;
                     document.getElementById('user-xp').innerText = profile.xp || 0;
                     
-                    // FIX LOGIC: Jika level di database bernilai 999999, render teks "Unlimited ♾️" plus animasi gradasi
+                    // Isi form edit dengan data saat ini
+                    document.getElementById('edit-username').value = profile.username || '';
+                    document.getElementById('edit-avatar-url').value = profile.avatar_url || '';
+                    document.getElementById('edit-bio').value = profile.bio || '';
+                    
                     const levelBadge = document.getElementById('user-level');
                     if (profile.level === 999999) {
                         levelBadge.innerText = "Unlimited ♾️";
@@ -205,11 +249,9 @@
                     const xpPercent = Math.min(profile.xp || 0, 100);
                     document.getElementById('user-xp-bar').style.width = `${xpPercent}%`;
 
-                    // Handle Tampilan Badge Khusus Owner vs User Biasa
                     const roleBadge = document.getElementById('user-role');
                     
                     if (profile.role === 'Owner') {
-                        // Efek Bling-Bling Merah Berkedip Mewah
                         roleBadge.className = "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-red-950/80 text-red-400 border border-red-500/60 shadow-lg owner-glow flex items-center gap-1";
                         roleBadge.innerHTML = `<i class="fa-solid fa-crown text-amber-400 animate-bounce"></i> Owner`;
                     } else {
@@ -226,6 +268,36 @@
             } else {
                 document.getElementById('auth-box').classList.remove('hidden');
             }
+        }
+
+        async function saveProfileChanges() {
+            if(!loggedInUser) return;
+            
+            const btnSave = document.getElementById('btn-save-profile');
+            btnSave.disabled = true;
+            btnSave.innerText = "Menyimpan...";
+
+            const newUsername = document.getElementById('edit-username').value.trim();
+            const newAvatar = document.getElementById('edit-avatar-url').value.trim();
+            const newBio = document.getElementById('edit-bio').value.trim();
+
+            const { error } = await supabaseProfile.from('profiles').upsert({
+                id: loggedInUser.id,
+                username: newUsername || loggedInUser.email.split('@')[0],
+                avatar_url: newAvatar,
+                bio: newBio,
+                updated_at: new Date()
+            });
+
+            if(error) {
+                alert("Gagal update data profil: " + error.message);
+            } else {
+                alert("Mantap wok, profil berhasil diperbarui!");
+                toggleEditZone(false);
+                checkUserSession();
+            }
+            btnSave.disabled = false;
+            btnSave.innerText = "Simpan";
         }
 
         async function handleLogout() {
