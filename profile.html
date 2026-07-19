@@ -208,32 +208,60 @@
             }
         }
 
-        async function loadFriends() {
-            const { data } = await supabaseClient
-                .from('friends')
-                .select(`id, status, requester_id, receiver_id`)
-                .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+        // 1. FUNGSI MEMUAT DAFTAR TEMAN (SUDAH DIPERBAIKI AGAR MUNCUL NAMA)
+async function loadFriends() {
+    // Kita select beserta data profiles dari requester dan receiver
+    const { data, error } = await supabaseClient
+        .from('friends')
+        .select(`
+            id, status, requester_id, receiver_id,
+            requester:profiles!friends_requester_id_fkey(full_name, user_id),
+            receiver:profiles!friends_receiver_id_fkey(full_name, user_id)
+        `)
+        .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
 
-            const listEl = document.getElementById('friends-list');
-            
-            if(!data || data.length === 0) {
-                listEl.innerHTML = '<div class="bg-black/30 p-4 rounded-xl text-center border border-white/5"><p class="text-gray-500 text-sm">Belum ada teman. Cari ID temanmu di atas!</p></div>';
-                return;
-            }
+    const listEl = document.getElementById('friends-list');
+    
+    if(!data || data.length === 0) {
+        listEl.innerHTML = '<div class="bg-black/30 p-4 rounded-xl text-center border border-white/5"><p class="text-gray-500 text-sm">Belum ada teman. Cari ID temanmu di atas!</p></div>';
+        return;
+    }
 
-            listEl.innerHTML = data.map(f => {
-                const isRequester = f.requester_id === currentUser.id;
-                const badge = f.status === 'accepted' 
-                    ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider border border-green-500/30"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
-                    : (isRequester ? '<span class="text-yellow-400 text-xs font-bold">Menunggu...</span>' : '<button class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition shadow-lg">Terima</button>');
-                
-                return `
-                <div class="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 transition hover:border-white/10">
-                    <span class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-user-astronaut text-purple-400 mr-2 text-lg"></i> User Terhubung</span>
-                    ${badge}
-                </div>`;
-            }).join('');
-        }
+    listEl.innerHTML = data.map(f => {
+        const isRequester = f.requester_id === currentUser.id;
+        // Jika kamu adalah pengirim, maka temanmu adalah penerima (receiver), dan sebaliknya
+        const friendData = isRequester ? f.receiver : f.requester;
+        const friendName = friendData ? friendData.full_name : 'User Tidak Diketahui';
+
+        const badge = f.status === 'accepted' 
+            ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider border border-green-500/30"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
+            : (isRequester 
+                ? '<span class="text-yellow-400 text-xs font-bold">Menunggu...</span>' 
+                : `<button onclick="acceptFriendRequest('${f.id}')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition shadow-lg">Terima</button>`);
+        
+        return `
+        <div class="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 transition hover:border-white/10">
+            <span class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-user-astronaut text-purple-400 mr-2 text-lg"></i> ${friendName}</span>
+            ${badge}
+        </div>`;
+    }).join('');
+}
+
+// 2. FUNGSI UNTUK MENERIMA PERMINTAAN TEMAN (BARU)
+async function acceptFriendRequest(requestId) {
+    const { error } = await supabaseClient
+        .from('friends')
+        .update({ status: 'accepted' })
+        .eq('id', requestId);
+
+    if (error) {
+        alert("Gagal menerima pertemanan: " + error.message);
+    } else {
+        alert("Selamat! Kamu sekarang berteman.");
+        loadFriends(); // Refresh daftar teman
+    }
+}
+
 
         async function logout() {
             await supabaseClient.auth.signOut();
