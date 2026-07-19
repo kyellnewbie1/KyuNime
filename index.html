@@ -122,14 +122,15 @@
             }
         });
 
-        async function apiRequest(endpoint) {
+                async function apiRequest(endpoint) {
             loading.classList.remove('hidden');
             container.innerHTML = '';
             try {
                 const res = await fetch(`${CONFIG.API_BASE}${endpoint}`);
                 const data = await res.json();
                 loading.classList.add('hidden');
-                return data.status ? data.result : null;
+                // Samehadaku biasanya langsung mengembalikan data atau lewat objek 'data'/'result'
+                return data;
             } catch (err) {
                 loading.classList.add('hidden');
                 return null;
@@ -139,50 +140,76 @@
         async function loadTerbaru(page = 1) {
             pagination.classList.remove('hidden');
             sectionTitle.innerText = "Update Episode Terbaru";
-            const res = await apiRequest(`/terbaru.php?page=${page}`);
-            if(res && res.anime_list) renderCards(res.anime_list, 'terbaru');
+            // SAMEHADAKU: Endpoint biasanya /recent-epps atau /anime/recent
+            const res = await apiRequest(`/anime/recent?page=${page}`); 
+            if (res) {
+                // Menyesuaikan jika Samehadaku menggunakan key 'data' atau 'result'
+                const list = res.data || res.result || res;
+                renderCards(list, 'terbaru');
+            }
         }
 
         async function loadSchedule(day) {
             pagination.classList.add('hidden');
-            const days = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
-            sectionTitle.innerText = `Jadwal Rilis: Hari ${days[day]}`;
-            const res = await apiRequest(`/schedule.php?day=${day}`);
-            if(res && res.raw_data) renderCards(res.raw_data, 'schedule');
+            const days = {monday:'monday', tuesday:'tuesday', wednesday:'wednesday', thursday:'thursday', friday:'friday', saturday:'saturday', sunday:'sunday'};
+            const daysIndo = {monday:'Senin', tuesday:'Selasa', wednesday:'Rabu', thursday:'Kamis', friday:'Jumat', saturday:'Sabtu', sunday:'Minggu'};
+            sectionTitle.innerText = `Jadwal Rilis: Hari ${daysIndo[day]}`;
+            
+            // SAMEHADAKU: Endpoint jadwal rilis
+            const res = await apiRequest(`/schedule/${days[day]}`);
+            if (res) {
+                const list = res.data || res.result || res;
+                renderCards(list, 'schedule');
+            }
         }
 
         async function searchAnime(query) {
             pagination.classList.add('hidden');
             sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
-            const res = await apiRequest(`/search.php?q=${encodeURIComponent(query)}`);
-            if(res && res.results) renderCards(res.results, 'search');
+            
+            // SAMEHADAKU: Endpoint pencarian biasanya /anime?q= atau /search?q=
+            const res = await apiRequest(`/anime?q=${encodeURIComponent(query)}`);
+            if (res) {
+                const list = res.data || res.result || res;
+                renderCards(list, 'search');
+            }
         }
 
         function renderCards(items, type) {
-            if(!items || items.length === 0) {
-                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan data anime.</p>`;
+            // Jaga-jaga jika data dibungkus dalam properti anime_list atau sejenisnya
+            if (items && items.anime_list) items = items.anime_list;
+            
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">Tidak ditemukan data anime atau endpoint API tidak cocok.</p>`;
                 return;
             }
+            
             container.innerHTML = items.map(anime => {
-                const title = anime.title;
-                const img = anime.image || anime.featured_img_src;
-                const href = (type === 'terbaru') ? `watch.html?episodeUrl=${encodeURIComponent(anime.url)}` : `detail.html?animeUrl=${encodeURIComponent(anime.url)}`;
+                const title = anime.title || anime.name;
+                // Menangani flexibilitas nama properti gambar dari API Samehadaku
+                const img = anime.image || anime.thumbnail || anime.featured_img_src || anime.poster;
+                
+                // Menentukan link tujuan (nonton langsung atau ke detail dulu)
+                const href = (type === 'terbaru') 
+                    ? `watch.html?episodeUrl=${encodeURIComponent(anime.url || anime.link)}` 
+                    : `detail.html?animeUrl=${encodeURIComponent(anime.url || anime.link)}`;
 
                 return `
                     <a href="${href}" class="group bg-[#111827]/40 rounded-2xl overflow-hidden border border-gray-800/80 hover:border-purple-500/60 flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-950/20 backdrop-blur-md">
                         <div class="relative overflow-hidden aspect-[3/4]">
                             <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" loading="lazy">
-                            ${anime.episodes ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${anime.episodes}</span>` : ''}
-                            ${anime.score ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${anime.score}</span>` : ''}
+                            ${anime.episode || anime.episodes ? `<span class="absolute bottom-2.5 right-2.5 bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">EP ${anime.episode || anime.episodes}</span>` : ''}
+                            ${anime.score || anime.rating ? `<span class="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-md text-[10px] text-yellow-400 font-bold px-2 py-0.5 rounded-lg border border-gray-800/40"><i class="fa-solid fa-star mr-1"></i>${anime.score || anime.rating}</span>` : ''}
                         </div>
                         <div class="p-3.5 flex-1 flex flex-col justify-between bg-gradient-to-t from-[#111827]/90 to-[#111827]/30">
                             <h3 class="text-xs font-bold line-clamp-2 text-gray-200 group-hover:text-purple-400 transition duration-300">${title}</h3>
-                            ${anime.released ? `<p class="text-[10px] text-gray-500 mt-1.5 font-medium"><i class="fa-regular fa-clock mr-1"></i>${anime.released}</p>` : ''}
+                            ${anime.uploaded_on || anime.released ? `<p class="text-[10px] text-gray-500 mt-1.5 font-medium"><i class="fa-regular fa-clock mr-1"></i>${anime.uploaded_on || anime.released}</p>` : ''}
                         </div>
                     </a>
                 `;
             }).join('');
         }
+
 
         document.getElementById('search-btn').addEventListener('click', () => {
             const q = document.getElementById('search-input').value; if(q.trim()) searchAnime(q);
