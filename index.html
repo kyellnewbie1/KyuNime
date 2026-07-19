@@ -69,7 +69,7 @@
         </div>
     </main>
 
-    <!-- Ambil konfigurasi duluan -->
+    <!-- Ambil konfigurasi URL dan background di awal -->
     <script src="config.js"></script>
     <script>
         let currentPage = 1;
@@ -86,9 +86,26 @@
                 const data = await res.json();
                 loading.classList.add('hidden');
                 
-                if (data.result) return data.result;
+                console.log("Raw API Response:", data);
+
+                // 1. Jika data langsung berupa Array
                 if (Array.isArray(data)) return data;
-                if (data.data) return data.data;
+                
+                // 2. Jika dibungkus di dalam properti objek standar
+                if (data.result && Array.isArray(data.result)) return data.result;
+                if (data.data && Array.isArray(data.data)) return data.data;
+                if (data.anime && Array.isArray(data.anime)) return data.anime;
+
+                // 3. PENCARIAN OTOMATIS: Cari properti key mana saja yang isinya Array data
+                for (let key in data) {
+                    if (Array.isArray(data[key])) {
+                        return data[key];
+                    }
+                }
+
+                // 4. Jika objek tunggal terdeteksi
+                if (data.title || data.name || data.title_anime) return [data];
+
                 return [];
             } catch (err) {
                 console.error("Fetch error:", err);
@@ -138,7 +155,7 @@
                 return `
                     <a href="${href}" class="anime-card bg-[#111827]/80 backdrop-blur-sm rounded-lg overflow-hidden border border-gray-800 flex flex-col group transition shadow-lg">
                         <div class="relative overflow-hidden aspect-[3/4]">
-                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-500">
+                            <img src="${img}" alt="${title}" class="w-full h-full object-cover transition duration-500" loading="lazy">
                             ${anime.type ? `<span class="absolute top-2 left-2 bg-purple-600 text-[10px] font-bold px-2 py-0.5 rounded shadow">${anime.type}</span>` : ''}
                             ${anime.episode ? `<span class="absolute bottom-2 right-2 bg-black/80 text-[11px] px-2 py-0.5 rounded text-purple-400 font-semibold border border-gray-800">Ep ${anime.episode}</span>` : ''}
                         </div>
@@ -173,7 +190,7 @@
             loadTerbaru(currentPage);
         });
 
-        // Load data awal
+        // Load data awal otomatis saat web dibuka
         loadTerbaru();
     </script>
 </body>
