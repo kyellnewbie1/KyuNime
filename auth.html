@@ -3,44 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login / Daftar - KyuAnime</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Autentikasi - KyuAnime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #050505; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        /* Background Blur Mewah */
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: url('https://files.catbox.moe/rijuxb.jpg') no-repeat center center;
+            background-size: cover; filter: blur(12px) brightness(0.3); transform: scale(1.1); z-index: -1;
+        }
+        .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-pop { animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4 selection:bg-purple-500">
 
-    <div class="bg-[#111827]/80 backdrop-blur-md p-8 rounded-2xl border border-gray-800 w-full max-w-md shadow-2xl">
-        <div class="text-center mb-8">
-            <a href="index.html" class="text-3xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a>
-            <p class="text-sm text-gray-400 mt-2" id="form-subtitle">Masuk untuk menyimpan anime favoritmu!</p>
+    <div class="glass-panel p-8 md:p-10 rounded-3xl w-full max-w-md relative overflow-hidden animate-pop">
+        <!-- Aksen Cahaya Belakang -->
+        <div class="absolute -top-20 -right-20 w-48 h-48 bg-purple-600/40 rounded-full blur-[60px] pointer-events-none"></div>
+        
+        <div class="text-center mb-8 relative z-10">
+            <a href="index.html" class="text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 inline-block mb-2 transform hover:scale-105 transition">
+                Kyu<span class="text-white">Anime</span>
+            </a>
+            <p class="text-sm text-gray-300" id="form-subtitle">Masuk untuk menyimpan anime favoritmu!</p>
         </div>
 
-        <form id="auth-form" class="space-y-4">
+        <form id="auth-form" class="space-y-5 relative z-10">
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>
-                <input type="email" id="email" required class="w-full bg-[#1f2937]/80 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-purple-500">
+                <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Email</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="email" id="email" required class="w-full bg-black/40 text-white pl-10 pr-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner">
+                </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1">Password</label>
-                <input type="password" id="password" required class="w-full bg-[#1f2937]/80 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-purple-500">
+                <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Password</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="password" id="password" required class="w-full bg-black/40 text-white pl-10 pr-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner">
+                </div>
             </div>
-            <button type="submit" id="submit-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">Login</button>
+            <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transform hover:-translate-y-1 transition duration-300">
+                Login Sekarang
+            </button>
         </form>
 
-        <p id="msg-box" class="text-center text-sm font-bold mt-4 hidden"></p>
+        <!-- Kotak Notifikasi -->
+        <div id="msg-box" class="text-center text-sm font-bold mt-5 hidden p-3 rounded-xl"></div>
 
-        <div class="mt-6 text-center text-sm text-gray-400">
+        <div class="mt-8 text-center text-sm text-gray-400 relative z-10 border-t border-white/10 pt-6">
             <span id="toggle-text">Belum punya akun?</span> 
-            <button id="toggle-btn" class="text-purple-400 hover:text-purple-300 font-bold ml-1">Daftar Sekarang</button>
+            <button type="button" id="toggle-btn" class="text-purple-400 hover:text-purple-300 font-bold ml-1 transition">Daftar Disini</button>
         </div>
     </div>
 
     <script src="config.js"></script>
     <script>
-        const supabaseUrl = CONFIG.SUPABASE_URL;
-        const supabaseKey = CONFIG.SUPABASE_ANON_KEY;
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // PERBAIKAN: Gunakan nama supabaseClient
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
         let isLogin = true;
         const form = document.getElementById('auth-form');
@@ -49,40 +74,59 @@
         const subtitle = document.getElementById('form-subtitle');
         const msgBox = document.getElementById('msg-box');
 
+        // Fungsi menampilkan pesan sukses/gagal yang elegan
+        function showMessage(msg, isError = false) {
+            msgBox.innerText = msg;
+            msgBox.className = `text-center text-sm font-bold mt-5 p-3 rounded-xl block ${isError ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-green-500/20 text-green-400 border border-green-500/30'}`;
+        }
+
         toggleBtn.addEventListener('click', () => {
             isLogin = !isLogin;
-            submitBtn.innerText = isLogin ? 'Login' : 'Daftar';
+            submitBtn.innerText = isLogin ? 'Login Sekarang' : 'Buat Akun Baru';
             document.getElementById('toggle-text').innerText = isLogin ? 'Belum punya akun?' : 'Sudah punya akun?';
-            toggleBtn.innerText = isLogin ? 'Daftar Sekarang' : 'Login Disini';
-            subtitle.innerText = isLogin ? 'Masuk untuk menyimpan anime favoritmu!' : 'Bergabunglah dengan komunitas wibu terbesar.';
+            toggleBtn.innerText = isLogin ? 'Daftar Disini' : 'Login Disini';
+            subtitle.innerText = isLogin ? 'Masuk untuk menyimpan anime favoritmu!' : 'Bergabunglah dengan komunitas KyuAnime.';
+            msgBox.classList.add('hidden'); 
         });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            
             submitBtn.innerText = 'Memproses...';
             submitBtn.disabled = true;
+            msgBox.classList.add('hidden');
 
             let error = null;
-            if (isLogin) {
-                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-                error = signInError;
-            } else {
-                const { error: signUpError } = await supabase.auth.signUp({ email, password });
-                error = signUpError;
-            }
+            
+            try {
+                if (isLogin) {
+                    const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    error = signInError;
+                } else {
+                    const { error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+                    error = signUpError;
+                }
 
-            if (error) {
-                msgBox.innerText = error.message;
-                msgBox.className = 'text-center text-sm font-bold mt-4 text-red-500 block';
-            } else {
-                msgBox.innerText = isLogin ? 'Login Berhasil! Mengalihkan...' : 'Pendaftaran berhasil! Silakan Login.';
-                msgBox.className = 'text-center text-sm font-bold mt-4 text-green-500 block';
-                if(isLogin) setTimeout(() => window.location.href = 'index.html', 1500);
+                if (error) {
+                    showMessage(error.message, true);
+                } else {
+                    showMessage(isLogin ? 'Login Berhasil! Mengalihkan...' : 'Pendaftaran berhasil! Silakan Login.', false);
+                    if(isLogin) {
+                        setTimeout(() => window.location.href = 'index.html', 1500);
+                    } else {
+                        setTimeout(() => toggleBtn.click(), 2000); // Otomatis pindah ke mode login
+                    }
+                }
+            } catch (err) {
+                showMessage("Terjadi kesalahan sistem.", true);
+            } finally {
+                if(!isLogin || error) {
+                    submitBtn.innerText = isLogin ? 'Login Sekarang' : 'Buat Akun Baru';
+                    submitBtn.disabled = false;
+                }
             }
-            submitBtn.innerText = isLogin ? 'Login' : 'Daftar';
-            submitBtn.disabled = false;
         });
     </script>
 </body>

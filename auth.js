@@ -1,11 +1,10 @@
-// Membutuhkan CDN Supabase di HTML: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+// Gunakan nama variabel supabaseClient agar tidak tabrakan dengan CDN
+const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 async function checkAuthStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     const navContainer = document.querySelector('nav .max-w-7xl');
     
-    // Cari atau buat div untuk area user
     let userArea = document.getElementById('user-nav-area');
     if(!userArea) {
         userArea = document.createElement('div');
@@ -15,25 +14,23 @@ async function checkAuthStatus() {
     }
 
     if (session) {
-        // Ambil data profil
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
         
         if(profile) {
             userArea.innerHTML = `
-                <a href="profil.html" class="flex items-center gap-2 hover:bg-gray-800 p-1.5 rounded-lg transition border border-transparent hover:border-gray-700">
-                    <img src="${profile.avatar_url}" class="w-8 h-8 rounded-full object-cover border border-purple-500" alt="Avatar">
+                <a href="profil.html" class="flex items-center gap-2 hover:bg-white/10 p-1.5 rounded-xl transition border border-transparent hover:border-white/20">
+                    <img src="${profile.avatar_url}" class="w-9 h-9 rounded-full object-cover border-2 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" alt="Avatar">
                     <span class="text-sm font-bold text-white hidden sm:block">${profile.full_name}</span>
                 </a>
             `;
         }
     } else {
         userArea.innerHTML = `
-            <a href="auth.html" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-4 rounded-full transition shadow-lg shadow-purple-500/30">
-                <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+            <a href="auth.html" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold py-2 px-5 rounded-xl shadow-lg shadow-purple-500/30 transform hover:-translate-y-0.5 transition">
+                <i class="fa-solid fa-user mr-2"></i>Login
             </a>
         `;
     }
 }
 
-// Jalankan pengecekan saat halaman dimuat
 document.addEventListener('DOMContentLoaded', checkAuthStatus);

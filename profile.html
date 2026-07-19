@@ -93,71 +93,68 @@
 
     <script src="config.js"></script>
     <script>
-        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-        let currentUser = null;
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+let currentUser = null;
 
-        async function loadProfile() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error || !session) return window.location.href = 'auth.html';
+async function loadProfile() {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error || !session) return window.location.href = 'auth.html';
 
-            currentUser = session.user;
-            const { data: profile } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+    currentUser = session.user;
+    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
 
-            if (profile) {
-                document.getElementById('profile-name').innerText = profile.full_name;
-                document.getElementById('profile-id').innerText = `#${profile.user_id}`;
-                document.getElementById('profile-img').src = profile.avatar_url;
-                document.getElementById('display-level').innerText = `Level ${profile.level}`;
-                document.getElementById('display-exp').innerText = profile.exp;
-                
-                const date = new Date(profile.created_at);
-                document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
+    if (profile) {
+        document.getElementById('profile-name').innerText = profile.full_name;
+        document.getElementById('profile-id').innerText = `#${profile.user_id}`;
+        document.getElementById('profile-img').src = profile.avatar_url;
+        document.getElementById('display-level').innerText = `Level ${profile.level}`;
+        document.getElementById('display-exp').innerText = profile.exp;
+        
+        const date = new Date(profile.created_at);
+        document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID');
 
-                const roleSpan = document.getElementById('profile-role');
-                roleSpan.innerText = profile.role === 'owner' ? '👑 Owner' : 'Member';
-                roleSpan.className = profile.role === 'owner' ? 'role-owner' : 'text-blue-400 font-bold';
+        const roleSpan = document.getElementById('profile-role');
+        roleSpan.innerText = profile.role === 'owner' ? '👑 Owner' : 'Member';
+        roleSpan.className = profile.role === 'owner' ? 'role-owner' : 'text-blue-400 font-bold';
 
-                loadFriends();
-            }
-        }
+        loadFriends();
+    }
+}
 
-        async function loadFriends() {
-            // Mengambil daftar teman yang requestnya melibatkan user saat ini
-            const { data } = await supabase
-                .from('friends')
-                .select(`id, status, requester_id, receiver_id`)
-                .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+async function loadFriends() {
+    const { data } = await supabaseClient
+        .from('friends')
+        .select(`id, status, requester_id, receiver_id`)
+        .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
 
-            const listEl = document.getElementById('friends-list');
-            
-            if(!data || data.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500 text-sm">Belum ada teman. Tambahkan teman dari kolom komentar!</p>';
-                return;
-            }
+    const listEl = document.getElementById('friends-list');
+    
+    if(!data || data.length === 0) {
+        listEl.innerHTML = '<p class="text-gray-500 text-sm">Belum ada teman. Tambahkan teman dari kolom komentar!</p>';
+        return;
+    }
 
-            // Untuk UI sederhana, kita hanya tampilkan jumlah record
-            listEl.innerHTML = data.map(f => {
-                const isRequester = f.requester_id === currentUser.id;
-                const badge = f.status === 'accepted' 
-                    ? '<span class="text-green-400 text-xs"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
-                    : (isRequester ? '<span class="text-yellow-400 text-xs">Menunggu konfirmasi...</span>' : '<button class="bg-blue-600 text-white text-xs px-2 py-1 rounded">Terima Request</button>');
-                
-                return `
-                <div class="flex items-center justify-between bg-[#1f2937]/50 p-3 rounded-lg border border-gray-700">
-                    <span class="text-sm font-bold text-white">
-                        <i class="fa-solid fa-user-circle text-gray-400 mr-2"></i> ID Teman Rahasia
-                    </span>
-                    ${badge}
-                </div>`;
-            }).join('');
-        }
+    listEl.innerHTML = data.map(f => {
+        const isRequester = f.requester_id === currentUser.id;
+        const badge = f.status === 'accepted' 
+            ? '<span class="text-green-400 text-xs"><i class="fa-solid fa-check mr-1"></i>Teman</span>' 
+            : (isRequester ? '<span class="text-yellow-400 text-xs">Menunggu...</span>' : '<button class="bg-blue-600 text-white text-xs px-2 py-1 rounded">Terima</button>');
+        
+        return `
+        <div class="flex items-center justify-between bg-[#1f2937]/50 p-3 rounded-lg border border-gray-700">
+            <span class="text-sm font-bold text-white"><i class="fa-solid fa-user-circle text-gray-400 mr-2"></i> User Rahasia</span>
+            ${badge}
+        </div>`;
+    }).join('');
+}
 
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        }
+async function logout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = 'index.html';
+}
 
-        loadProfile();
+loadProfile();
+
     </script>
 </body>
 </html>
