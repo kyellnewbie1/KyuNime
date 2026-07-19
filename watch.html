@@ -6,37 +6,42 @@
     <title>Nonton Streaming - KyuAnime</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { background-color: #0b0f19; color: #e2e8f0; }</style>
+    <style>body { background-color: #0b0f19; color: #e2e8f0; font-family: sans-serif; }</style>
 </head>
 <body>
 
-    <nav class="bg-[#111827] border-b border-gray-800 px-4 py-3">
+    <!-- Navbar -->
+    <nav class="bg-[#111827]/90 backdrop-blur-md border-b border-gray-800 px-4 py-3">
         <div class="max-w-7xl mx-auto"><a href="index.html" class="text-2xl font-black text-purple-500 tracking-wider">Kyu<span class="text-white">Anime</span></a></div>
     </nav>
 
-    <main class="max-w-5xl mx-auto px-4 py-6">
-        <h1 id="episode-title" class="text-xl font-black mb-4 text-white">Memuat Episode...</h1>
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        <h1 id="episode-title" class="text-lg md:text-xl font-black text-white line-clamp-1">Memuat Info Video...</h1>
 
-        <!-- Video Player Frame -->
-        <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 aspect-video relative mb-4">
-            <iframe id="video-player" src="" class="w-full h-full" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
+        <!-- Video Frame Outer -->
+        <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 aspect-video relative">
+            <iframe id="video-player" src="" class="w-full h-full" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
         </div>
 
-        <!-- Server Selector -->
-        <div class="bg-[#111827] p-4 rounded-xl border border-gray-800 mb-6">
-            <h3 class="text-xs uppercase font-bold text-gray-400 mb-2 tracking-wider">Pilih Server Player</h3>
-            <div id="server-container" class="flex flex-wrap gap-2">
-                <button onclick="changeServer(1)" class="srv-btn px-4 py-1.5 bg-purple-600 rounded text-sm text-white font-semibold">Server 1</button>
-                <button onclick="changeServer(2)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-sm text-white font-semibold hover:bg-purple-600">Server 2</button>
-                <button onclick="changeServer(3)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-sm text-white font-semibold hover:bg-purple-600">Server 3</button>
+        <!-- Server Selector & Control -->
+        <div class="bg-[#111827]/80 backdrop-blur-sm p-4 rounded-xl border border-gray-800 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-xs uppercase font-bold text-gray-400 mb-1 tracking-wider">Pilihan Server Streaming</h3>
+                <div id="server-container" class="flex flex-wrap gap-2">
+                    <button onclick="changeServer(1)" class="srv-btn px-4 py-1.5 bg-purple-600 rounded text-xs text-white font-bold transition">Server 1</button>
+                    <button onclick="changeServer(2)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-xs text-white font-bold transition hover:bg-purple-600">Server 2</button>
+                    <button onclick="changeServer(3)" class="srv-btn px-4 py-1.5 bg-[#1f2937] rounded text-xs text-white font-bold transition hover:bg-purple-600">Server 3</button>
+                </div>
             </div>
+            <p class="text-xs text-gray-400"><i class="fa-solid fa-circle-info mr-1 text-purple-400"></i>Ganti server jika player eror atau tidak termuat.</p>
         </div>
 
-        <!-- Download Links -->
-        <div class="bg-[#111827] p-4 rounded-xl border border-gray-800">
-            <h2 class="text-base font-bold text-purple-400 mb-3"><i class="fa-solid fa-download mr-2"></i>Link Download</h2>
+        <!-- Download Section -->
+        <div class="bg-[#111827]/80 backdrop-blur-sm p-5 rounded-xl border border-gray-800 shadow-md">
+            <h2 class="text-base font-bold text-purple-400 mb-3"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Link Unduhan Episode</h2>
             <div id="download-container" class="space-y-3">
-                <div class="animate-pulse bg-[#1f2937] h-8 rounded w-1/2"></div>
+                <div class="flex justify-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-t-2 border-purple-500"></div></div>
             </div>
         </div>
     </main>
@@ -46,20 +51,17 @@
         const urlParams = new URLSearchParams(window.location.search);
         const episodeUrl = urlParams.get('episodeUrl');
         
-        // Ekstrak slug secara manual dari full URL Samehadaku
         let slug = "";
         if (episodeUrl) {
-            const cleanUrl = episodeUrl.replace(/\/$/, ""); // hapus trailing slash
+            const cleanUrl = episodeUrl.replace(/\/$/, ""); 
             slug = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
         }
 
         function loadVideo(serverNumber) {
             if(!slug) return;
-            // Set iframe src ke endpoint streaming API
             const playerUrl = `${CONFIG.API_BASE}/stream.php?slug=${slug}&server=${serverNumber}`;
             document.getElementById('video-player').src = playerUrl;
             
-            // Perbarui UI tombol aktif
             document.querySelectorAll('.srv-btn').forEach((btn, idx) => {
                 if((idx + 1) === serverNumber) {
                     btn.classList.replace('bg-[#1f2937]', 'bg-purple-600');
@@ -76,7 +78,6 @@
         async function loadDownloads() {
             if(!episodeUrl) return;
             
-            // Format judul kasir dari slug
             document.getElementById('episode-title').innerText = slug.replace(/-/g, ' ').toUpperCase();
 
             try {
@@ -89,17 +90,17 @@
                 
                 if (dlData && dlData.length > 0) {
                     dlData.forEach(item => {
-                        const quality = item.quality || 'Unknown Quality';
+                        const quality = item.quality || 'Format Unduhan';
                         const linksHtml = Object.entries(item.links || {})
                             .map(([serverName, linkUrl]) => `
-                                <a href="${linkUrl}" target="_blank" rel="noopener" class="bg-[#1f2937] hover:bg-purple-600 text-xs px-3 py-1 rounded transition text-white font-medium">
+                                <a href="${linkUrl}" target="_blank" rel="noopener" class="bg-[#1f2937] hover:bg-purple-600 text-xs px-3 py-1.5 rounded transition text-white font-medium border border-gray-700 hover:border-purple-500">
                                     ${serverName}
                                 </a>
                             `).join('');
 
                         dlContainer.innerHTML += `
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800 pb-2 last:border-none gap-2">
-                                <span class="text-sm font-semibold text-gray-300 bg-[#0b0f19] px-2 py-1 rounded border border-gray-800">${quality}</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800/60 pb-3 last:border-none gap-2">
+                                <span class="text-xs font-bold text-gray-200 bg-[#0b0f19] px-2.5 py-1 rounded border border-gray-800">${quality}</span>
                                 <div class="flex flex-wrap gap-1.5">${linksHtml}</div>
                             </div>
                         `;
@@ -108,11 +109,11 @@
                     dlContainer.innerHTML = `<p class="text-gray-400 text-sm">Link download tidak tersedia untuk episode ini.</p>`;
                 }
             } catch (err) {
-                document.getElementById('download-container').innerHTML = `<p class="text-red-500 text-sm">Gagal memuat link download.</p>`;
+                document.getElementById('download-container').innerHTML = `<p class="text-red-500 text-sm">Gagal mengambil data download.</p>`;
             }
         }
 
-        // Init jalankan server 1 pertama kali dan fetch download links
+        // Jalankan
         loadVideo(1);
         loadDownloads();
     </script>
