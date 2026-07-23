@@ -32,6 +32,54 @@
             filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
         }
         @keyframes nebula-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- BORDER / BINGKAI PROFIL RARITY --- */
+        .avatar-frame {
+            position: relative;
+            display: inline-block;
+            border-radius: 9999px;
+            padding: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .frame-common {
+            background: linear-gradient(135deg, #9ca3af, #4b5563);
+            box-shadow: 0 0 8px rgba(156, 163, 175, 0.6);
+        }
+
+        .frame-rare {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4, #10b981);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.8);
+            animation: rare-glow 2s infinite alternate;
+        }
+        @keyframes rare-glow {
+            0% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
+            100% { box-shadow: 0 0 16px rgba(6, 182, 212, 0.9); }
+        }
+
+        .frame-legendary {
+            background: linear-gradient(45deg, #f59e0b, #fef08a, #d97706, #fef08a);
+            background-size: 300% 300%;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.9), 0 0 8px rgba(254, 240, 138, 0.8);
+            animation: legendary-shine 2.5s infinite linear;
+        }
+        @keyframes legendary-shine {
+            0% { background-position: 0% 50%; box-shadow: 0 0 10px rgba(245, 158, 11, 0.8); }
+            50% { background-position: 100% 50%; box-shadow: 0 0 20px rgba(251, 191, 36, 1), 0 0 12px rgba(255, 255, 255, 0.8); }
+            100% { background-position: 0% 50%; box-shadow: 0 0 10px rgba(245, 158, 11, 0.8); }
+        }
+
+        .frame-mythic {
+            background: linear-gradient(270deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #ef4444, #ec4899);
+            background-size: 400% 400%;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.9), 0 0 12px rgba(139, 92, 246, 0.8);
+            animation: mythic-aura 3s infinite linear;
+        }
+        @keyframes mythic-aura {
+            0% { background-position: 0% 50%; filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.8)); }
+            50% { background-position: 100% 50%; filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.9)); }
+            100% { background-position: 0% 50%; filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.8)); }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-purple-500">
@@ -102,7 +150,9 @@
         <div class="glass-panel rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative border border-white/10 bg-[#0b0f19]">
             <div id="modal-banner" class="h-24 bg-cover bg-center opacity-80"></div>
             <div class="px-6 pb-8 relative -mt-12 text-center">
-                <img id="modal-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#0b0f19] mx-auto object-cover bg-gray-900 mb-3 shadow-xl">
+                <div id="modal-avatar-frame" class="avatar-frame mx-auto mb-3">
+                    <img id="modal-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#0b0f19] object-cover bg-gray-900 shadow-xl">
+                </div>
                 <h3 id="modal-name" class="text-xl font-black text-white"></h3>
                 <p class="text-xs text-gray-400 mb-1 font-mono">ID: <span id="modal-id"></span></p>
                 <p class="text-xs font-bold mb-5 uppercase tracking-widest" id="modal-role"></p>
@@ -309,10 +359,10 @@
 
             // 1. Coba fetch komentar beserta profiles via Foreign Key
             let { data, error } = await supabaseClient
-    .from('comments')
-    .select(`id, content, created_at, user_id, profiles!user_id(*)`) 
-    .eq('episode_slug', slug)
-    .order('created_at', { ascending: false });
+            .from('comments')
+            .select(`id, content, created_at, user_id, profiles!user_id(*)`) 
+            .eq('episode_slug', slug)
+            .order('created_at', { ascending: false });
 
 
             // 2. Fallback jika Foreign Key belum tersambung di Supabase GUI
@@ -356,7 +406,7 @@
             }
 
             list.innerHTML = data.map(c => {
-                const prof = c.profiles || { full_name: 'Anonim', avatar_url: 'https://via.placeholder.com/150', role: 'user', level: 0 };
+                const prof = c.profiles || { full_name: 'Anonim', avatar_url: 'https://via.placeholder.com/150', role: 'user', level: 0, avatar_border: 'none' };
                 const userRole = prof.role ? prof.role.toLowerCase() : 'user';
                 const isOwner = userRole === 'owner';
                 const isBreaker = userRole === 'breaker';
@@ -372,9 +422,13 @@
                     roleBadge = `<span class="bg-purple-950/80 border border-purple-500/50 text-purple-200 text-[10px] px-2 py-0.5 rounded-md font-bold shadow-[0_0_8px_rgba(168,85,247,0.6)]"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-cyan-400"></i>Breaker</span>`;
                 }
 
+                const borderClass = (prof.avatar_border && prof.avatar_border !== 'none') ? `frame-${prof.avatar_border}` : '';
+
                 return `
                 <div class="glass-panel p-4 rounded-2xl flex gap-4 transition hover:bg-white/5">
-                    <img src="${prof.avatar_url || 'https://via.placeholder.com/150'}" onclick="openProfile('${c.user_id}')" class="w-12 h-12 rounded-full border-2 border-white/10 object-cover cursor-pointer hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] transition" title="Lihat Profil">
+                    <div class="avatar-frame ${borderClass} self-start cursor-pointer hover:scale-105 transition" onclick="openProfile('${c.user_id}')" title="Lihat Profil">
+                        <img src="${prof.avatar_url || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full border-2 border-white/10 object-cover">
+                    </div>
                     <div class="flex-1">
                         <div class="flex flex-wrap items-center gap-2 mb-1">
                             <span onclick="openProfile('${c.user_id}')" class="font-bold text-sm cursor-pointer hover:underline ${nameClass}">${prof.full_name || 'Anonim'}</span>
@@ -421,6 +475,14 @@
                 modalBanner.style.backgroundImage = `url('${data.banner_url}')`;
             } else {
                 modalBanner.style.backgroundImage = '';
+            }
+
+            const modalFrame = document.getElementById('modal-avatar-frame');
+            if (modalFrame) {
+                modalFrame.className = 'avatar-frame mx-auto mb-3';
+                if (data.avatar_border && data.avatar_border !== 'none') {
+                    modalFrame.classList.add(`frame-${data.avatar_border}`);
+                }
             }
 
             document.getElementById('modal-avatar').src = data.avatar_url || 'https://via.placeholder.com/150';
