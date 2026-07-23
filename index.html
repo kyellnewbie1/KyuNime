@@ -62,6 +62,8 @@
             </div>
         </div>
 
+        <div class="ad-slot hidden my-6 w-full flex justify-center items-center overflow-hidden min-h-[90px] bg-black/30 rounded-2xl border border-white/5"></div>
+
         <h2 class="text-lg font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-alt text-purple-500"></i> Jadwal Rilis</h2>
         <div id="schedule-tabs" class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide mb-8"></div>
 
@@ -74,6 +76,8 @@
         </div>
 
         <div id="anime-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6"></div>
+
+        <div class="ad-slot hidden my-8 w-full flex justify-center items-center overflow-hidden min-h-[90px] bg-black/30 rounded-2xl border border-white/5"></div>
 
         <div id="pagination" class="flex justify-center items-center gap-4 mt-12 hidden">
             <button id="prev-page" class="px-5 py-2 glass-card rounded-xl hover:bg-purple-600 transition font-bold"><i class="fa-solid fa-chevron-left"></i></button>
@@ -99,6 +103,54 @@
         document.getElementById('schedule-tabs').innerHTML = days.map((day, i) => `
             <button onclick="loadSchedule('${day}')" class="shrink-0 px-6 py-2.5 glass-card rounded-xl hover:bg-purple-600/80 hover:border-purple-400 font-semibold transition">${daysIndo[i]}</button>
         `).join('');
+
+        // FUNGSI CEK ROLE DAN MEMUAT ADSENSE SECARA DINAMIS
+        async function checkAndLoadAds() {
+            try {
+                let userRole = '';
+                if (typeof supabaseClient !== 'undefined') {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session) {
+                        const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+                        if (profile && profile.role) {
+                            userRole = profile.role.toLowerCase();
+                        }
+                    }
+                }
+
+                // JIKA ROLE ADALAH OWNER ATAU BREAKER -> JANGAN TAMPILKAN IKLAN SAMA SEKALI
+                if (userRole === 'owner' || userRole === 'breaker') {
+                    console.log('Role:', userRole, '- Bebas Iklan!');
+                    return;
+                }
+
+                // JIKA BUKAN OWNER/BREAKER (MEMBER/TAMU) -> MUAT SCRIPT ADSENSE & TAMPILKAN BANNER
+                if (!document.getElementById('adsense-script')) {
+                    const adScript = document.createElement('script');
+                    adScript.id = 'adsense-script';
+                    adScript.async = true;
+                    adScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3499824854571913";
+                    adScript.crossOrigin = "anonymous";
+                    document.head.appendChild(adScript);
+                }
+
+                document.querySelectorAll('.ad-slot').forEach(slot => {
+                    slot.classList.remove('hidden');
+                    slot.innerHTML = `
+                        <ins class="adsbygoogle"
+                             style="display:block; width:100%;"
+                             data-ad-client="ca-pub-3499824854571913"
+                             data-ad-slot="auto"
+                             data-ad-format="auto"
+                             data-full-width-responsive="true"></ins>
+                    `;
+                    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+                });
+
+            } catch (err) {
+                console.error("Gagal memeriksa status iklan:", err);
+            }
+        }
 
         // Fungsi Memuat Background Kustom / Default Halaman
         async function applyDynamicBackground() {
@@ -197,6 +249,7 @@
         async function initIndex() {
             await applyDynamicBackground();
             checkAuthStatus();
+            await checkAndLoadAds(); // Eksekusi Pengecekan Iklan Dinamis
             loadTerbaru();
         }
         
