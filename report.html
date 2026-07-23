@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Assistant - KyuAnime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ================= RESET & BASE ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 0%, rgba(88, 28, 135, 0.15), transparent 60%);
+            z-index: -1;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .glass-card {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        @keyframes fadeSlideUp {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-slide { animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.2)); }
+            100% { filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.6)); }
+        }
+        .glow-pulse { animation: glowPulse 2.5s ease-in-out infinite alternate; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-animation { animation: float 4s ease-in-out infinite; }
+
+        @keyframes typing {
+            0% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.3; transform: scale(0.95); }
+        }
+        .typing-dot {
+            animation: typing 1.4s infinite;
+            display: inline-block;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
+
+        .role-owner {
+            background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rgb-text 3s ease infinite;
+            font-weight: 900;
+        }
+        @keyframes rgb-text {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .role-breaker {
+            background: linear-gradient(45deg, #a855f7, #ec4899, #6366f1, #06b6d4, #a855f7);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: nebula-glow 3s ease infinite;
+            font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+        }
+        @keyframes nebula-glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .role-nolep {
+            background: linear-gradient(45deg, #ff0000, #1a0000, #8b0000, #000000, #ff0000);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: dark-blood 2s ease infinite;
+            font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
+        }
+        @keyframes dark-blood {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles-canvas"></canvas>
+
+    <nav class="fixed w-full top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 hover:scale-105 transition">
+                Kyu<span class="text-white">Anime</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 hidden sm:inline-block">
+                    <i class="fa-regular fa-circle-question mr-1"></i> Butuh Bantuan?
+                </span>
+                <a href="index.html" class="bg-purple-600/80 hover:bg-purple-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-purple-600/20">
+                    <i class="fa-solid fa-house mr-2"></i>Beranda
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 pt-28 pb-16 relative z-10">
+
+        <div class="text-center mb-10 animate-fade-slide">
+            <div class="inline-block p-4 rounded-2xl bg-purple-600/20 border border-purple-500/30 mb-4 float-animation">
+                <i class="fa-solid fa-robot text-5xl text-purple-400"></i>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-black text-white glow-pulse">
+                Asisten <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">KyuAnime</span>
+            </h1>
+            <p class="text-gray-400 mt-3 max-w-2xl mx-auto text-sm md:text-base">
+                Laporkan kendala, ajukan pertanyaan, atau sampaikan saran untuk pengembangan KyuAnime.
+                Asisten AI akan merespons dengan cepat dan tepat.
+            </p>
+        </div>
+
+        <div class="glass-panel rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden animate-fade-slide" style="animation-delay: 150ms;">
+
+            <div class="absolute -top-20 -right-20 w-48 h-48 bg-purple-600/20 rounded-full blur-[80px] pointer-events-none"></div>
+            <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-blue-600/20 rounded-full blur-[80px] pointer-events-none"></div>
+
+            <div id="chat-messages" class="space-y-4 max-h-[420px] overflow-y-auto pr-2 mb-6 relative z-10">
+                <!-- Welcome -->
+                <div class="flex items-start gap-3 animate-fade-slide">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
+                        <i class="fa-solid fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="glass-card rounded-2xl rounded-tl-none px-4 py-3 max-w-[85%] border border-white/5">
+                        <p class="text-sm text-gray-200 leading-relaxed">
+                            Halo! 👋 Saya asisten KyuAnime. Ada yang bisa saya bantu? 
+                            Silakan tulis laporan, pertanyaan, atau saran Anda di bawah.
+                        </p>
+                        <span class="text-[10px] text-gray-500 mt-1 block">Asisten KyuAnime</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="typing-indicator" class="flex items-start gap-3 mb-4 hidden">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
+                    <i class="fa-solid fa-robot text-white text-sm"></i>
+                </div>
+                <div class="glass-card rounded-2xl rounded-tl-none px-5 py-3 border border-white/5">
+                    <div class="flex gap-1.5">
+                        <span class="typing-dot w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span class="typing-dot w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span class="typing-dot w-2 h-2 bg-purple-400 rounded-full"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-10 flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 relative">
+                    <i class="fa-solid fa-pen absolute left-4 top-3.5 text-gray-400"></i>
+                    <textarea id="report-input" rows="2" class="w-full bg-black/40 text-sm text-white pl-10 pr-4 py-3 rounded-2xl border border-white/10 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner resize-none" placeholder="Tulis laporan atau pertanyaan Anda..."></textarea>
+                </div>
+                <button id="send-btn" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black py-3 px-6 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transform hover:-translate-y-1 transition duration-300 flex items-center justify-center gap-2 shrink-0">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="hidden sm:inline">Kirim</span>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-4 relative z-10">
+                <button onclick="quickReport('Kendala: Video tidak bisa diputar')" class="text-xs bg-white/5 hover:bg-purple-600/30 border border-white/10 hover:border-purple-400 px-3 py-1.5 rounded-full transition text-gray-300">
+                    <i class="fa-regular fa-circle-play mr-1"></i> Video error
+                </button>
+                <button onclick="quickReport('Kendala: Login gagal')" class="text-xs bg-white/5 hover:bg-purple-600/30 border border-white/10 hover:border-purple-400 px-3 py-1.5 rounded-full transition text-gray-300">
+                    <i class="fa-regular fa-circle-user mr-1"></i> Login gagal
+                </button>
+                <button onclick="quickReport('Saran: Tambah fitur favorit')" class="text-xs bg-white/5 hover:bg-purple-600/30 border border-white/10 hover:border-purple-400 px-3 py-1.5 rounded-full transition text-gray-300">
+                    <i class="fa-regular fa-lightbulb mr-1"></i> Saran fitur
+                </button>
+                <button onclick="quickReport('Pertanyaan: Cara ganti avatar')" class="text-xs bg-white/5 hover:bg-purple-600/30 border border-white/10 hover:border-purple-400 px-3 py-1.5 rounded-full transition text-gray-300">
+                    <i class="fa-regular fa-circle-question mr-1"></i> Bantuan
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center text-xs text-gray-500 animate-fade-slide" style="animation-delay: 300ms;">
+            <p>
+                <i class="fa-regular fa-copyright mr-1"></i> KyuAnime · Asisten didukung oleh 
+                <span class="text-purple-400 font-medium">Gemini AI</span> · 
+                <span class="text-gray-600">|</span> 
+                Laporan akan diproses oleh asisten pintar
+            </p>
+            <div class="flex justify-center gap-4 mt-2 text-[11px]">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span> Online</span>
+                <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-gray-500"></i> 24/7</span>
+                <span class="flex items-center gap-1"><i class="fa-regular fa-lock text-gray-500"></i> Terenkripsi</span>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ============================================================
+        // 1. PARTICLE SYSTEM
+        // ============================================================
+        (function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+            const particles = [];
+            const count = 70;
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = (Math.random() - 0.5) * 0.6;
+                    this.speedY = (Math.random() - 0.5) * 0.6;
+                    this.opacity = Math.random() * 0.4 + 0.15;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(168, 85, 247, ${this.opacity})`;
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                particles.forEach(p => { p.update(); p.draw(); });
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(168, 85, 247, ${0.05 * (1 - dist / 120)})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // ============================================================
+        // 2. CORE LOGIC: Report Assistant (DIPERBAIKI)
+        // ============================================================
+
+        const API_URL = 'https://api-nanzz.my.id/api/ai/gemini.php';
+        const chatMessages = document.getElementById('chat-messages');
+        const reportInput = document.getElementById('report-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // System prompt untuk Gemini
+        const SYSTEM_PROMPT = `
+        Kamu adalah Asisten KyuAnime, asisten resmi untuk website streaming anime KyuAnime.
+        Tugasmu adalah membantu user dengan segala hal tentang KyuAnime.
+
+        INFORMASI TENTANG KYUANIME:
+        - KyuAnime adalah platform streaming anime dengan subtitle Indonesia.
+        - Fitur: Nonton anime, download episode, sistem komentar, profil user, level & EXP, sistem pertemanan, role (Owner, Breaker, Nolep, Member).
+        - API yang digunakan: samehadaku (via api-nanas.my.id).
+        - Database: Supabase (profil, komentar, pertemanan).
+        - Role: Owner (pemilik), Breaker (VIP), Nolep (role khusus), Member (user biasa).
+        - Website memiliki halaman: index.html (beranda), auth.html (login/daftar), profile.html (profil), watch.html (nonton), detail.html (detail anime), intip.html (cari profil).
+
+        PERANMU:
+        - Bantu user melaporkan kendala (video error, login gagal, bug, dll).
+        - Jawab pertanyaan tentang fitur KyuAnime.
+        - Terima saran untuk pengembangan website.
+        - Berikan solusi teknis jika memungkinkan.
+        - Respons dengan bahasa Indonesia yang ramah dan profesional.
+        - Jika user melaporkan masalah, catat dengan detail dan beri saran tindak lanjut.
+
+        FORMAT RESPONS:
+        - Gunakan bahasa Indonesia.
+        - Sertakan emoji yang relevan.
+        - Jika ada solusi, berikan langkah-langkah jelas.
+        - Jangan pernah menolak permintaan user, selalu bantu dengan positif.
+        `;
+
+        // Fungsi tambah pesan ke chat
+        function addMessage(text, isUser = false, isError = false) {
+            const div = document.createElement('div');
+            div.className = `flex items-start gap-3 animate-fade-slide`;
+
+            if (isUser) {
+                div.innerHTML = `
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-user text-white text-sm"></i>
+                    </div>
+                    <div class="glass-card rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%] border border-white/5 bg-purple-600/10">
+                        <p class="text-sm text-gray-200 leading-relaxed">${escapeHtml(text)}</p>
+                        <span class="text-[10px] text-gray-500 mt-1 block">Anda</span>
+                    </div>
+                `;
+            } else {
+                const borderColor = isError ? 'border-red-500/30 bg-red-500/5' : 'border-white/5';
+                const iconBg = isError ? 'from-red-600 to-red-800' : 'from-purple-600 to-pink-600';
+                div.innerHTML = `
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br ${iconBg} flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
+                        <i class="fa-solid ${isError ? 'fa-triangle-exclamation' : 'fa-robot'} text-white text-sm"></i>
+                    </div>
+                    <div class="glass-card rounded-2xl rounded-tl-none px-4 py-3 max-w-[85%] border ${borderColor}">
+                        <p class="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+                        <span class="text-[10px] text-gray-500 mt-1 block">${isError ? '⚠️ Sistem' : 'Asisten KyuAnime'}</span>
+                    </div>
+                `;
+            }
+
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showTyping(show) {
+            typingIndicator.classList.toggle('hidden', !show);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ========== KIRIM REPORT DENGAN HANDLING ERROR LEBIH BAIK ==========
+        async function sendReport(userMessage) {
+            if (!userMessage.trim()) return;
+
+            addMessage(userMessage, true);
+            reportInput.value = '';
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            showTyping(true);
+
+            try {
+                const fullPrompt = `${SYSTEM_PROMPT}\n\nUSER: ${userMessage}\n\nASISTEN:`;
+
+                // Fetch dengan timeout 15 detik
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const response = await fetch(`${API_URL}?text=${encodeURIComponent(fullPrompt)}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                clearTimeout(timeoutId);
+
+                // Cek status HTTP
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Baca response sebagai text dulu
+                const rawText = await response.text();
+                let data;
+
+                // Coba parse JSON
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    // Jika bukan JSON, coba ambil dari plain text
+                    data = { status: true, result: rawText };
+                }
+
+                showTyping(false);
+
+                if (data.status && data.result) {
+                    let result = data.result;
+                    if (result.startsWith('ASISTEN:')) {
+                        result = result.replace('ASISTEN:', '').trim();
+                    }
+                    addMessage(result, false);
+                } else {
+                    // Jika response tidak punya status/result
+                    if (data.error || data.message) {
+                        addMessage(`⚠️ ${data.error || data.message}`, false, true);
+                    } else {
+                        addMessage('Maaf, saya tidak memahami respons dari server. Silakan coba lagi. 🙏', false, true);
+                    }
+                }
+
+            } catch (error) {
+                showTyping(false);
+
+                // Tangani berbagai jenis error
+                let errorMsg = '';
+                if (error.name === 'AbortError') {
+                    errorMsg = '⏱️ Waktu koneksi habis (timeout). Server mungkin sibuk. Silakan coba lagi nanti.';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMsg = '🌐 Gagal terhubung ke server. Periksa koneksi internet Anda atau coba lagi nanti.';
+                } else {
+                    errorMsg = `❌ ${error.message || 'Terjadi kesalahan teknis. Silakan coba lagi.'}`;
+                }
+
+                addMessage(errorMsg, false, true);
+
+                // Log detail ke console untuk debugging
+                console.error('[Report Error]', error);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span class="hidden sm:inline"> Kirim</span>';
+                reportInput.focus();
+            }
+        }
+
+        // Quick report
+        function quickReport(text) {
+            reportInput.value = text;
+            sendReport(text);
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', () => {
+            const msg = reportInput.value.trim();
+            if (msg) sendReport(msg);
+        });
+
+        reportInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const msg = reportInput.value.trim();
+                if (msg) sendReport(msg);
+            }
+        });
+
+        reportInput.focus();
+
+        // Expose quickReport ke global
+        window.quickReport = quickReport;
+
+        // ========== CEK KONEKSI API SAAT LOAD (OPSIONAL) ==========
+        async function checkAPIHealth() {
+            try {
+                const res = await fetch(`${API_URL}?text=ping`, { signal: AbortSignal.timeout(5000) });
+                if (res.ok) {
+                    console.log('[KyuAnime] API Gemini online ✅');
+                } else {
+                    console.warn('[KyuAnime] API Gemini merespon dengan status:', res.status);
+                }
+            } catch (e) {
+                console.warn('[KyuAnime] API Gemini tidak dapat dijangkau:', e.message);
+            }
+        }
+        checkAPIHealth();
+    </script>
+
+</body>
+</html>
