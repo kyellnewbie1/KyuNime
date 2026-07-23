@@ -144,7 +144,7 @@
         </div>
     </main>
 
-    <!-- MODAL EDIT CUSTOM PROFIL (NAMA & URL RESOURCE) -->
+    <!-- MODAL EDIT CUSTOM PROFIL (UPLOAD GAMBAR) -->
     <div id="edit-profile-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden backdrop-blur-md px-4 transition-opacity">
         <div class="glass-panel rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 bg-[#0b0f19] p-6">
             <h3 class="text-xl font-black text-white mb-4 flex items-center gap-2">
@@ -157,16 +157,16 @@
                     <input type="text" id="edit-name" class="w-full bg-black/60 text-sm text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-bold transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Foto Profil</label>
-                    <input type="url" id="edit-avatar-url" placeholder="https://domain.com/avatar.png" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono transition">
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Foto Profil (Avatar)</label>
+                    <input type="file" id="edit-avatar-file" accept="image/*" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Banner Atas</label>
-                    <input type="url" id="edit-banner-url" placeholder="https://domain.com/banner.jpg" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono transition">
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Banner Atas</label>
+                    <input type="file" id="edit-banner-file" accept="image/*" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">URL Background</label>
-                    <input type="url" id="edit-background-url" placeholder="Kosongkan untuk pakai default" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 font-mono transition">
+                    <label class="block text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Background Wallpaper</label>
+                    <input type="file" id="edit-background-file" accept="image/*" class="w-full bg-black/60 text-xs text-white px-4 py-2.5 rounded-xl border border-gray-700 focus:outline-none focus:border-purple-500 transition file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
                 </div>
             </div>
 
@@ -179,7 +179,6 @@
 
     <!-- Coba muat config.js, jika gagal atau tidak ada, script tidak akan error -->
     <script>
-        // Fallback konfigurasi jika config.js tidak ada
         window.CONFIG = window.CONFIG || {
             SUPABASE_URL: "URL_SUPABASE_KAMU", 
             SUPABASE_ANON_KEY: "KEY_SUPABASE_KAMU",
@@ -195,7 +194,7 @@
 
         async function loadProfile() {
             const { data: { session }, error } = await supabaseClient.auth.getSession();
-            if (error || !session) return window.location.href = 'auth.html'; // Pastikan auth.html ada
+            if (error || !session) return window.location.href = 'auth.html';
 
             currentUser = session.user;
             const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
@@ -217,7 +216,7 @@
                     document.body.style.backgroundSize = "cover";
                     document.body.style.backgroundPosition = "center";
                 } else {
-                    document.body.style.backgroundImage = 'none'; // Kembali ke warna solid dark mode jika kosong
+                    document.body.style.backgroundImage = 'none';
                 }
 
                 // --- PENGATURAN BANNER KUSTOM ---
@@ -249,14 +248,15 @@
             }
         }
 
-        // Buka Modal Edit Kustom Profil & isi nilainya
+        // Buka Modal Edit
         async function openEditModal() {
             const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             if (profile) {
                 document.getElementById('edit-name').value = profile.full_name || '';
-                document.getElementById('edit-avatar-url').value = profile.avatar_url || '';
-                document.getElementById('edit-banner-url').value = profile.banner_url || '';
-                document.getElementById('edit-background-url').value = profile.background_url || '';
+                // Kosongkan input file agar siap menerima file baru
+                document.getElementById('edit-avatar-file').value = '';
+                document.getElementById('edit-banner-file').value = '';
+                document.getElementById('edit-background-file').value = '';
                 document.getElementById('edit-profile-modal').classList.remove('hidden');
             }
         }
@@ -265,16 +265,38 @@
             document.getElementById('edit-profile-modal').classList.add('hidden');
         }
 
-        // Menyimpan seluruh perubahan data
+        // Fungsi bantuan untuk upload file ke Supabase Storage
+        async function uploadImageToSupabase(file, folderName) {
+            // Buat nama file unik agar tidak bertabrakan
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
+            const filePath = `${folderName}/${fileName}`;
+
+            // Proses Upload ke bucket 'user_content'
+            const { error: uploadError } = await supabaseClient.storage
+                .from('user_content') 
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) {
+                console.error("Gagal upload gambar:", uploadError);
+                return null;
+            }
+
+            // Ambil URL Publik
+            const { data } = supabaseClient.storage.from('user_content').getPublicUrl(filePath);
+            return data.publicUrl;
+        }
+
+        // Menyimpan perubahan profil & Mengunggah Gambar jika ada
         async function saveProfileChanges() {
             const btnSave = document.getElementById('btn-save-profile');
-            btnSave.innerText = 'Menyimpan...';
+            btnSave.innerText = 'Mengunggah & Menyimpan...';
             btnSave.disabled = true;
 
             const nameInput = document.getElementById('edit-name').value.trim();
-            const avatarInput = document.getElementById('edit-avatar-url').value.trim();
-            const bannerInput = document.getElementById('edit-banner-url').value.trim();
-            const backgroundInput = document.getElementById('edit-background-url').value.trim();
+            const avatarFile = document.getElementById('edit-avatar-file').files[0];
+            const bannerFile = document.getElementById('edit-banner-file').files[0];
+            const backgroundFile = document.getElementById('edit-background-file').files[0];
 
             if(!nameInput) {
                 alert("Nama tidak boleh kosong!");
@@ -283,14 +305,31 @@
                 return;
             }
 
+            // Siapkan objek data yang akan diupdate ke database
+            let updateData = { full_name: nameInput };
+
+            // Jika user memilih file avatar baru
+            if (avatarFile) {
+                const url = await uploadImageToSupabase(avatarFile, 'avatars');
+                if (url) updateData.avatar_url = url;
+            }
+
+            // Jika user memilih file banner baru
+            if (bannerFile) {
+                const url = await uploadImageToSupabase(bannerFile, 'banners');
+                if (url) updateData.banner_url = url;
+            }
+
+            // Jika user memilih file background baru
+            if (backgroundFile) {
+                const url = await uploadImageToSupabase(backgroundFile, 'backgrounds');
+                if (url) updateData.background_url = url;
+            }
+
+            // Update database dengan data baru
             const { error } = await supabaseClient
                 .from('profiles')
-                .update({
-                    full_name: nameInput,
-                    avatar_url: avatarInput,
-                    banner_url: bannerInput,
-                    background_url: backgroundInput
-                })
+                .update(updateData)
                 .eq('id', currentUser.id);
 
             btnSave.innerText = 'Simpan';
@@ -299,8 +338,9 @@
             if(error) {
                 alert("Gagal memperbarui profil: " + error.message);
             } else {
+                alert("Profil berhasil diperbarui!");
                 closeEditModal();
-                loadProfile(); // Langsung terapkan perubahan tanpa refresh page
+                loadProfile(); // Refresh tampilan seketika
             }
         }
 
