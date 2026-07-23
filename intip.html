@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intip Profil - KyuAnime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { 
+            background-color: #0b0f19; 
+            color: #e2e8f0; 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            transition: background 0.5s ease; 
+        }
+        
+        .role-owner {
+            background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: rgb-text 3s ease infinite; font-weight: 900;
+        }
+        @keyframes rgb-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        .role-breaker {
+            background: linear-gradient(45deg, #a855f7, #ec4899, #6366f1, #06b6d4, #a855f7);
+            background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: nebula-glow 3s ease infinite; font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+        }
+        @keyframes nebula-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .glass-panel { 
+            background: rgba(17, 24, 39, 0.7); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-purple-500">
+
+    <!-- Navbar -->
+    <nav class="bg-[#0b0f19]/90 border-b border-gray-800 sticky top-0 z-50 px-4 py-3 backdrop-blur-md">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <a href="profile.html" class="text-xl font-black text-purple-500 tracking-wider hover:scale-105 transition flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Profil
+            </a>
+            <span class="text-sm font-bold text-gray-400">Pencarian Publik</span>
+        </div>
+    </nav>
+
+    <!-- Konten Utama -->
+    <main class="max-w-3xl mx-auto px-4 py-10">
+        
+        <!-- Kotak Pencarian ID -->
+        <div class="glass-panel rounded-3xl p-6 shadow-2xl mb-8">
+            <h1 class="text-xl font-black text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-purple-500"></i> Intip Profil Member
+            </h1>
+            <p class="text-xs text-gray-400 mb-6">Masukkan User ID (contoh: 12345) untuk melihat profil lengkap siapapun secara publik.</p>
+            
+            <div class="flex gap-2">
+                <input type="text" id="target-user-id" placeholder="Masukkan User ID..." class="flex-1 bg-black/50 text-sm text-white px-4 py-3 rounded-xl border border-gray-700/50 focus:outline-none focus:border-purple-500 transition shadow-inner font-mono">
+                <button onclick="searchAndRedirect()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-purple-600/20 text-sm">
+                    Cari Profil
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Kartu Hasil Profil -->
+        <div id="profile-container" class="hidden">
+            <div class="glass-panel rounded-3xl overflow-hidden shadow-2xl relative border border-white/10">
+                <!-- Banner -->
+                <div id="view-banner" class="h-32 bg-gradient-to-r from-purple-900/50 via-gray-900 to-black bg-cover bg-center border-b border-gray-800"></div>
+                
+                <div class="px-8 pb-8 relative -mt-12 text-center md:text-left flex flex-col md:flex-row items-center md:items-end gap-6">
+                    <img id="view-avatar" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border-4 border-[#0b0f19] object-cover bg-gray-900 shadow-xl">
+                    
+                    <div class="flex-1 mb-2">
+                        <div class="flex flex-col md:flex-row items-center md:items-center gap-3">
+                            <h2 id="view-name" class="text-3xl font-black text-white">Memuat...</h2>
+                            <span id="view-user-code" class="bg-purple-900/50 border border-purple-500/30 px-2 py-1 rounded text-xs text-purple-300 font-mono font-bold">#--</span>
+                        </div>
+                        <p class="text-sm font-bold uppercase tracking-widest mt-2" id="view-role">Member</p>
+                    </div>
+                </div>
+
+                <!-- Statistik Mini -->
+                <div class="px-8 pb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Level Akun</span>
+                        <span id="view-level" class="text-xl font-black text-purple-400">-</span>
+                    </div>
+                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Total EXP</span>
+                        <span id="view-exp" class="text-xl font-black text-green-400">-</span>
+                    </div>
+                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Bergabung Sejak</span>
+                        <span id="view-join" class="text-sm font-black text-white">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesan Error / Not Found -->
+        <div id="error-box" class="hidden glass-panel rounded-2xl p-6 text-center border border-red-500/30 bg-red-950/10">
+            <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-2"></i>
+            <h3 class="text-lg font-bold text-white">User Tidak Ditemukan</h3>
+            <p class="text-xs text-gray-400 mt-1">Pastikan User ID yang kamu masukkan benar.</p>
+        </div>
+
+    </main>
+
+    <!-- Script Konfigurasi & Logika -->
+    <script>
+        window.CONFIG = window.CONFIG || {
+            SUPABASE_URL: "URL_SUPABASE_KAMU", 
+            SUPABASE_ANON_KEY: "KEY_SUPABASE_KAMU",
+            DEFAULT_BACKGROUND: ""
+        };
+    </script>
+    <script src="config.js" onerror="console.warn('config.js tidak ditemukan.')"></script>
+    
+    <script>
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+        // Cek apakah ada parameter URL (contoh: intip.html?id=12345)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetId = urlParams.get('id');
+            if (targetId) {
+                document.getElementById('target-user-id').value = targetId;
+                fetchProfileData(targetId);
+            }
+        });
+
+        async function searchAndRedirect() {
+            const targetId = document.getElementById('target-user-id').value.trim();
+            if (!targetId) return alert("Masukkan User ID terlebih dahulu!");
+            
+            // Ubah URL browser tanpa reload agar gampang dibagikan
+            window.history.pushState({}, '', `intip.html?id=${targetId}`);
+            fetchProfileData(targetId);
+        }
+
+        async function fetchProfileData(userCode) {
+            const profileContainer = document.getElementById('profile-container');
+            const errorBox = document.getElementById('error-box');
+
+            profileContainer.classList.add('hidden');
+            errorBox.classList.add('hidden');
+
+            // Ambil data berdasarkan kolom user_id (angka ID unik member)
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('user_id', userCode)
+                .single();
+
+            if (error || !data) {
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            // Tampilkan Data ke Elemen HTML
+            document.getElementById('view-name').innerText = data.full_name || 'Tanpa Nama';
+            document.getElementById('view-user-code').innerText = `#${data.user_id || '000000'}`;
+            document.getElementById('view-avatar').src = data.avatar_url || 'https://via.placeholder.com/150';
+            document.getElementById('view-level').innerText = data.level || 0;
+            document.getElementById('view-exp').innerText = data.exp || 0;
+
+            // Background & Wallpaper Utama
+            if (data.background_url && data.background_url.trim() !== "") {
+                document.body.style.backgroundImage = `url('${data.background_url.trim()}')`;
+            } else if (CONFIG.DEFAULT_BACKGROUND && CONFIG.DEFAULT_BACKGROUND.trim() !== "") {
+                document.body.style.backgroundImage = `url('${CONFIG.DEFAULT_BACKGROUND}')`;
+            } else {
+                document.body.style.backgroundImage = 'none';
+            }
+
+            // Banner Profil
+            const bannerEl = document.getElementById('view-banner');
+            if (data.banner_url && data.banner_url.trim() !== "") {
+                bannerEl.style.backgroundImage = `url('${data.banner_url.trim()}')`;
+            } else {
+                bannerEl.style.backgroundImage = 'none';
+            }
+
+            // Tanggal Bergabung
+            const date = new Date(data.created_at);
+            document.getElementById('view-join').innerText = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Role Badge
+            const roleEl = document.getElementById('view-role');
+            if (data.role === 'owner') {
+                roleEl.innerText = '👑 Owner Server';
+                roleEl.className = 'text-sm font-black uppercase tracking-widest role-owner mt-2';
+            } else if (data.role === 'breaker') {
+                roleEl.innerText = '🌌 Nebula Breaker';
+                roleEl.className = 'text-sm font-black uppercase tracking-widest role-breaker mt-2';
+            } else {
+                roleEl.innerText = 'Wibu Member';
+                roleEl.className = 'text-sm font-black uppercase tracking-widest text-blue-400 mt-2';
+            }
+
+            profileContainer.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
