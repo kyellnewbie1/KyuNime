@@ -33,21 +33,21 @@
         }
         @keyframes nebula-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-/* EFEK BLING-BLING DARK BLOOD UNTUK NOLEP */
-.role-nolep {
-    background: linear-gradient(45deg, #ff0000, #1a0000, #8b0000, #000000, #ff0000);
-    background-size: 200% 200%; 
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent;
-    animation: dark-blood 2s ease infinite; 
-    font-weight: 900;
-    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
-}
-@keyframes dark-blood { 
-    0% { background-position: 0% 50%; } 
-    50% { background-position: 100% 50%; } 
-    100% { background-position: 0% 50%; } 
-}
+        /* EFEK BLING-BLING DARK BLOOD UNTUK NOLEP */
+        .role-nolep {
+            background: linear-gradient(45deg, #ff0000, #1a0000, #8b0000, #000000, #ff0000);
+            background-size: 200% 200%; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            animation: dark-blood 2s ease infinite; 
+            font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
+        }
+        @keyframes dark-blood { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
 
         /* --- ANIMASI BAR EXP RGB RINGAN --- */
         .rgb-exp-bar {
@@ -117,6 +117,19 @@
             0% { background-position: 0% 50%; filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)); }
             50% { background-position: 100% 50%; filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.9)); }
             100% { background-position: 0% 50%; filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)); }
+        }
+
+        /* 5. Mythic Red Frame (Blood Bling-Bling Aura) - BARU! */
+        .frame-mythic-red {
+            background: linear-gradient(270deg, #ff0000, #7f1d1d, #ff4500, #dc2626, #ff0000);
+            background-size: 400% 400%;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.9), 0 0 15px rgba(220, 38, 38, 0.8);
+            animation: mythic-blood-aura 2.5s infinite linear;
+        }
+        @keyframes mythic-blood-aura {
+            0% { background-position: 0% 50%; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8)); }
+            50% { background-position: 100% 50%; filter: drop-shadow(0 0 25px rgba(255, 69, 0, 1)); }
+            100% { background-position: 0% 50%; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8)); }
         }
     </style>
 </head>
@@ -253,8 +266,9 @@
             <h3 class="text-xl font-black text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-nodes text-purple-400"></i> Pilih Bingkai Profil
             </h3>
-            <p class="text-xs text-gray-400 mb-6">Pilih rarity bingkai kustom sesuai gaya favoritmu (Khusus Breaker & Owner).</p>
+            <p class="text-xs text-gray-400 mb-6">Pilih rarity bingkai kustom sesuai gaya favoritmu (Khusus Breaker, Owner, & Nolep).</p>
             
+            <!-- Grid diubah menjadi proporsional 2 kolom untuk memuat 6 item -->
             <div class="grid grid-cols-2 gap-4 mb-6 max-h-80 overflow-y-auto pr-1">
                 <div onclick="selectBorder('none')" class="bg-black/40 border border-white/10 hover:border-purple-500 p-4 rounded-2xl cursor-pointer flex flex-col items-center justify-center transition">
                     <div class="w-16 h-16 rounded-full bg-gray-800 mb-2 border-2 border-dashed border-gray-600"></div>
@@ -292,14 +306,26 @@
                     <span class="text-[10px] text-yellow-500/80">Gold Bling-Bling</span>
                 </div>
 
-                <div onclick="selectBorder('mythic')" class="bg-black/40 border border-white/10 hover:border-purple-400 p-4 rounded-2xl cursor-pointer flex flex-col items-center justify-center transition col-span-2">
+                <!-- Mythic 1: Cosmic Aura -->
+                <div onclick="selectBorder('mythic')" class="bg-black/40 border border-white/10 hover:border-purple-400 p-4 rounded-2xl cursor-pointer flex flex-col items-center justify-center transition">
                     <div class="avatar-frame frame-mythic mb-2">
                         <div class="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center">
                             <i class="fa-solid fa-dragon text-purple-400"></i>
                         </div>
                     </div>
-                    <span class="text-xs font-bold role-breaker">Mythic Cosmic ✨🔥</span>
-                    <span class="text-[10px] text-purple-300">Rainbow Aura Bling-Bling</span>
+                    <span class="text-[11px] font-bold role-breaker text-center">Mythic Cosmic ✨</span>
+                    <span class="text-[10px] text-purple-300 text-center">Rainbow Aura</span>
+                </div>
+
+                <!-- Mythic 2: Red Blood Aura (BARU) -->
+                <div onclick="selectBorder('mythic-red')" class="bg-black/40 border border-white/10 hover:border-red-500 p-4 rounded-2xl cursor-pointer flex flex-col items-center justify-center transition">
+                    <div class="avatar-frame frame-mythic-red mb-2">
+                        <div class="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center">
+                            <i class="fa-solid fa-fire-flame-curved text-red-500"></i>
+                        </div>
+                    </div>
+                    <span class="text-[11px] font-bold role-nolep text-center">Mythic Blood 🩸</span>
+                    <span class="text-[10px] text-red-300 text-center">Red Bling-Bling</span>
                 </div>
             </div>
 
@@ -368,20 +394,19 @@
                 document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
                 const roleSpan = document.getElementById('profile-role');
-if (profile.role === 'owner') {
-    roleSpan.innerText = '👑 Owner';
-    roleSpan.className = 'role-owner';
-} else if (profile.role === 'breaker') {
-    roleSpan.innerText = '🔥 Breaker';
-    roleSpan.className = 'role-breaker';
-} else if (profile.role === 'nolep') {
-    roleSpan.innerText = '🩸 Nolep';
-    roleSpan.className = 'role-nolep text-[14px]';
-} else {
-    roleSpan.innerText = 'Member';
-    roleSpan.className = 'text-blue-400 font-bold';
-}
-
+                if (profile.role === 'owner') {
+                    roleSpan.innerText = '👑 Owner';
+                    roleSpan.className = 'role-owner';
+                } else if (profile.role === 'breaker') {
+                    roleSpan.innerText = '🔥 Breaker';
+                    roleSpan.className = 'role-breaker';
+                } else if (profile.role === 'nolep') {
+                    roleSpan.innerText = '🩸 Nolep';
+                    roleSpan.className = 'role-nolep text-[14px]';
+                } else {
+                    roleSpan.innerText = 'Member';
+                    roleSpan.className = 'text-blue-400 font-bold';
+                }
 
                 loadFriends();
             }
@@ -392,11 +417,11 @@ if (profile.role === 'owner') {
             if (!currentUserProfile) return;
             const role = (currentUserProfile.role || '').toLowerCase();
 
-            // Cek apakah user ber-role Breaker atau Owner
-            if (role === 'owner' || role === 'breaker') {
+            // Cek apakah user ber-role Breaker, Owner, ATAU Nolep (DITAMBAHKAN)
+            if (role === 'owner' || role === 'breaker' || role === 'nolep') {
                 document.getElementById('border-selection-modal').classList.remove('hidden');
             } else {
-                alert("🔒 Bingkai Profil Kustom hanya tersedia khusus untuk role Breaker & Owner!");
+                alert("🔒 Bingkai Profil Kustom hanya tersedia khusus untuk role Breaker, Owner & Nolep!");
             }
         }
 
@@ -709,20 +734,19 @@ if (profile.role === 'owner') {
             document.getElementById('modal-exp').innerText = data.exp || 0;
             
             const roleEl = document.getElementById('modal-role');
-if (data.role === 'owner') {
-    roleEl.innerText = '👑 Owner';
-    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-owner';
-} else if (data.role === 'breaker') {
-    roleEl.innerText = '🔥 Breaker';
-    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-breaker';
-} else if (data.role === 'nolep') {
-    roleEl.innerText = '🩸 Nolep';
-    roleEl.className = 'text-[12px] font-black mb-5 uppercase tracking-widest role-nolep';
-} else {
-    roleEl.innerText = 'Wibu Member';
-    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest text-blue-400';
-}
-
+            if (data.role === 'owner') {
+                roleEl.innerText = '👑 Owner';
+                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-owner';
+            } else if (data.role === 'breaker') {
+                roleEl.innerText = '🔥 Breaker';
+                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-breaker';
+            } else if (data.role === 'nolep') {
+                roleEl.innerText = '🩸 Nolep';
+                roleEl.className = 'text-[12px] font-black mb-5 uppercase tracking-widest role-nolep';
+            } else {
+                roleEl.innerText = 'Wibu Member';
+                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest text-blue-400';
+            }
 
             modal.classList.remove('hidden');
         }
