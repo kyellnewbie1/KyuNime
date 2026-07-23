@@ -33,6 +33,22 @@
         }
         @keyframes nebula-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
+/* EFEK BLING-BLING DARK BLOOD UNTUK NOLEP */
+.role-nolep {
+    background: linear-gradient(45deg, #ff0000, #1a0000, #8b0000, #000000, #ff0000);
+    background-size: 200% 200%; 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+    animation: dark-blood 2s ease infinite; 
+    font-weight: 900;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
+}
+@keyframes dark-blood { 
+    0% { background-position: 0% 50%; } 
+    50% { background-position: 100% 50%; } 
+    100% { background-position: 0% 50%; } 
+}
+
         /* --- ANIMASI BAR EXP RGB RINGAN --- */
         .rgb-exp-bar {
             background: linear-gradient(90deg, #ff007f, #7928ca, #00dfd8, #0070f3, #10b981, #ff007f);
@@ -352,16 +368,20 @@
                 document.getElementById('stat-join').innerText = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
                 const roleSpan = document.getElementById('profile-role');
-                if (profile.role === 'owner') {
-                    roleSpan.innerText = '👑 Owner';
-                    roleSpan.className = 'role-owner';
-                } else if (profile.role === 'breaker') {
-                    roleSpan.innerText = '🔥 Breaker';
-                    roleSpan.className = 'role-breaker';
-                } else {
-                    roleSpan.innerText = 'Member';
-                    roleSpan.className = 'text-blue-400 font-bold';
-                }
+if (profile.role === 'owner') {
+    roleSpan.innerText = '👑 Owner';
+    roleSpan.className = 'role-owner';
+} else if (profile.role === 'breaker') {
+    roleSpan.innerText = '🔥 Breaker';
+    roleSpan.className = 'role-breaker';
+} else if (profile.role === 'nolep') {
+    roleSpan.innerText = '🩸 Nolep';
+    roleSpan.className = 'role-nolep text-[14px]';
+} else {
+    roleSpan.innerText = 'Member';
+    roleSpan.className = 'text-blue-400 font-bold';
+}
+
 
                 loadFriends();
             }
@@ -689,16 +709,20 @@
             document.getElementById('modal-exp').innerText = data.exp || 0;
             
             const roleEl = document.getElementById('modal-role');
-            if (data.role === 'owner') {
-                roleEl.innerText = '👑 Owner';
-                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-owner';
-            } else if (data.role === 'breaker') {
-                roleEl.innerText = '🔥 Breaker';
-                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-breaker';
-            } else {
-                roleEl.innerText = 'Wibu Member';
-                roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest text-blue-400';
-            }
+if (data.role === 'owner') {
+    roleEl.innerText = '👑 Owner';
+    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-owner';
+} else if (data.role === 'breaker') {
+    roleEl.innerText = '🔥 Breaker';
+    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest role-breaker';
+} else if (data.role === 'nolep') {
+    roleEl.innerText = '🩸 Nolep';
+    roleEl.className = 'text-[12px] font-black mb-5 uppercase tracking-widest role-nolep';
+} else {
+    roleEl.innerText = 'Wibu Member';
+    roleEl.className = 'text-[11px] font-black mb-5 uppercase tracking-widest text-blue-400';
+}
+
 
             modal.classList.remove('hidden');
         }
