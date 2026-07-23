@@ -18,131 +18,89 @@
         /* Efek Glass & Glow */
         .glass-nav { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .glass-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-card:hover { border-color: rgba(168, 85, 247, 0.4); transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2); }
+        .hover-glow:hover { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.8); }
         
-        body { 
-            background-color: #0b0f19; 
-            color: #f3f4f6; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed;
-            transition: background 0.5s ease;
-        }
+        /* Scrollbar Tersembunyi */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* --- STYLES BORDER / BINGKAI PROFIL RARITY --- */
-        .avatar-frame {
-            position: relative;
-            display: inline-block;
-            border-radius: 9999px;
-            padding: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .frame-common {
-            background: linear-gradient(135deg, #9ca3af, #4b5563);
-            box-shadow: 0 0 6px rgba(156, 163, 175, 0.6);
-        }
-
-        .frame-rare {
-            background: linear-gradient(135deg, #3b82f6, #06b6d4, #10b981);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
-            animation: rare-glow 2s infinite alternate;
-        }
-        @keyframes rare-glow {
-            0% { box-shadow: 0 0 6px rgba(59, 130, 246, 0.6); }
-            100% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.9); }
-        }
-
-        .frame-legendary {
-            background: linear-gradient(45deg, #f59e0b, #fef08a, #d97706, #fef08a);
-            background-size: 300% 300%;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.9), 0 0 6px rgba(254, 240, 138, 0.8);
-            animation: legendary-shine 2.5s infinite linear;
-        }
-        @keyframes legendary-shine {
-            0% { background-position: 0% 50%; box-shadow: 0 0 8px rgba(245, 158, 11, 0.8); }
-            50% { background-position: 100% 50%; box-shadow: 0 0 16px rgba(251, 191, 36, 1), 0 0 10px rgba(255, 255, 255, 0.8); }
-            100% { background-position: 0% 50%; box-shadow: 0 0 8px rgba(245, 158, 11, 0.8); }
-        }
-
-        .frame-mythic {
-            background: linear-gradient(270deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #ef4444, #ec4899);
-            background-size: 400% 400%;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.9), 0 0 10px rgba(139, 92, 246, 0.8);
-            animation: mythic-aura 3s infinite linear;
-        }
-        @keyframes mythic-aura {
-            0% { background-position: 0% 50%; filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.8)); }
-            50% { background-position: 100% 50%; filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.9)); }
-            100% { background-position: 0% 50%; filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.8)); }
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
+        
+        /* Background Global Gradasi Radial */
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 0%, rgba(88, 28, 135, 0.15), transparent 60%); z-index: -1;
         }
     </style>
 </head>
 <body class="antialiased selection:bg-purple-500 selection:text-white">
 
-    <nav class="glass-nav fixed top-0 w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            
-            <a href="index.html" class="flex items-center gap-2 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-purple-500/30 group-hover:scale-105 transition">
-                    K
-                </div>
-                <span class="text-xl font-black tracking-tight text-white">Kyu<span class="text-purple-400">Anime</span></span>
+    <nav class="glass-nav fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <a href="index.html" class="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 transform hover:scale-105 transition">
+                Kyu<span class="text-white">Anime</span>
             </a>
-
-            <div class="flex-1 max-w-md mx-4">
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Cari anime..." class="w-full bg-gray-900/80 text-sm text-gray-200 rounded-full pl-10 pr-4 py-2 border border-gray-700/50 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-500 text-xs"></i>
-                </div>
+            
+            <div class="relative w-full md:w-96 order-last md:order-none mt-2 md:mt-0">
+                <input type="text" id="search-input" placeholder="Cari anime..." class="w-full bg-gray-900/60 text-sm text-white pl-10 pr-4 py-2.5 rounded-2xl border border-gray-700/50 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
             </div>
-
-            <div id="auth-area" class="flex items-center gap-3">
-                <a href="auth.html" class="text-sm font-bold bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-full transition shadow-lg shadow-purple-600/20">Login</a>
-            </div>
-
+            
+            <div id="user-nav-area" class="flex items-center gap-3"></div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+    <main class="max-w-7xl mx-auto px-4 pt-28 pb-12">
         
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-black text-white flex items-center gap-3">
-                    <span class="w-2.5 h-7 bg-gradient-to-b from-purple-500 to-indigo-600 rounded-full inline-block"></span>
-                    Rilis Terbaru
-                </h1>
-                <p class="text-xs text-gray-400 mt-1">Update anime episode terbaru setiap hari</p>
-            </div>
-            
-            <div class="flex items-center gap-2 self-end md:self-auto">
-                <button id="prev-page" class="bg-gray-800/80 hover:bg-purple-600 border border-gray-700/50 text-white text-xs font-bold px-3 py-2 rounded-lg transition disabled:opacity-50 disabled:hover:bg-gray-800">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <span id="page-num" class="bg-gray-900 border border-gray-800 text-purple-400 font-bold text-xs px-3.5 py-2 rounded-lg">1</span>
-                <button id="next-page" class="bg-gray-800/80 hover:bg-purple-600 border border-gray-700/50 text-white text-xs font-bold px-3 py-2 rounded-lg transition">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
+        <div class="relative w-full h-[250px] md:h-[400px] rounded-3xl overflow-hidden mb-10 shadow-2xl group cursor-pointer border border-gray-800">
+            <img src="https://files.catbox.moe/rijuxb.jpg" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700" alt="Hero">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-[#0b0f19]/60 to-transparent"></div>
+            <div class="absolute bottom-6 left-6 md:bottom-10 md:left-10 z-10">
+                <span class="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block shadow-[0_0_10px_rgba(168,85,247,0.5)]">Musim Ini</span>
+                <h1 class="text-3xl md:text-5xl font-black text-white mb-2 drop-shadow-lg">Jelajahi Dunia Anime</h1>
+                <p class="text-gray-300 text-sm md:text-base max-w-lg hidden md:block">Streaming anime terbaru dengan kualitas terbaik, subtitle Indonesia, dan update tercepat hanya di KyuAnime.</p>
             </div>
         </div>
 
-        <div id="anime-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 min-h-[400px]">
-            <div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>
-            <div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>
-            <div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>
-            <div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>
-            <div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>
+        <h2 class="text-lg font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-alt text-purple-500"></i> Jadwal Rilis</h2>
+        <div id="schedule-tabs" class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide mb-8"></div>
+
+        <div class="flex justify-between items-end mb-6">
+            <h2 id="section-title" class="text-2xl font-black border-l-4 border-purple-500 pl-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Update Terbaru</h2>
+        </div>
+        
+        <div id="loading" class="flex justify-center py-20 hidden">
+            <div class="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
         </div>
 
+        <div id="anime-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6"></div>
+
+        <div id="pagination" class="flex justify-center items-center gap-4 mt-12 hidden">
+            <button id="prev-page" class="px-5 py-2 glass-card rounded-xl hover:bg-purple-600 transition font-bold"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="page-num" class="font-black text-purple-400 bg-gray-900/80 px-6 py-2 rounded-xl border border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]">1</span>
+            <button id="next-page" class="px-5 py-2 glass-card rounded-xl hover:bg-purple-600 transition font-bold"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
     </main>
 
     <script src="config.js"></script>
-    <script src="auth.js"></script>
+    <script src="auth.js"></script>  
+
     <script>
         const API_BASE = "https://api-nanas.my.id/api/nonton/samehadaku";
         let currentPage = 1;
+        const container = document.getElementById('anime-container');
+        const loading = document.getElementById('loading');
+        const pagination = document.getElementById('pagination');
+        const sectionTitle = document.getElementById('section-title');
 
+        const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        const daysIndo = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+        
+        document.getElementById('schedule-tabs').innerHTML = days.map((day, i) => `
+            <button onclick="loadSchedule('${day}')" class="shrink-0 px-6 py-2.5 glass-card rounded-xl hover:bg-purple-600/80 hover:border-purple-400 font-semibold transition">${daysIndo[i]}</button>
+        `).join('');
+
+        // Fungsi Memuat Background Kustom / Default Halaman
         async function applyDynamicBackground() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
@@ -157,83 +115,68 @@
             }
         }
 
-        async function checkAuthStatus() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const authArea = document.getElementById('auth-area');
-            
-            if(session) {
-                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-                const avatar = profile ? profile.avatar_url : 'https://via.placeholder.com/150';
-                const name = profile ? profile.full_name : 'User';
-                const borderClass = (profile && profile.avatar_border && profile.avatar_border !== 'none') ? `frame-${profile.avatar_border}` : '';
-
-                authArea.innerHTML = `
-                    <a href="profile.html" class="flex items-center gap-2.5 bg-gray-800/60 hover:bg-gray-700/60 border border-gray-700/50 p-1.5 pr-4 rounded-full transition group">
-                        <div class="avatar-frame ${borderClass}">
-                            <img src="${avatar}" class="w-7 h-7 rounded-full object-cover">
-                        </div>
-                        <span class="text-xs font-bold text-gray-200 group-hover:text-purple-400 transition">${name}</span>
-                    </a>
-                `;
+        async function fetchAPI(endpoint) {
+            loading.classList.remove('hidden'); container.innerHTML = ''; pagination.classList.add('hidden');
+            try {
+                const res = await fetch(`${API_BASE}${endpoint}`);
+                const data = await res.json();
+                loading.classList.add('hidden');
+                return data.status ? data : null;
+            } catch (err) {
+                loading.classList.add('hidden');
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-red-400"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><p>Gagal memuat data server.</p></div>`;
+                return null;
             }
         }
 
         async function loadTerbaru(page = 1) {
-            const grid = document.getElementById('anime-grid');
-            grid.innerHTML = Array(10).fill('<div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>').join('');
-
-            try {
-                const res = await fetch(`${API_BASE}/latest.php?page=${page}`);
-                const data = await res.json();
-
-                if(!data || !data.status || !data.result) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400 font-bold">Gagal memuat data anime.</div>';
-                    return;
-                }
-
-                renderAnime(data.result);
-            } catch(e) {
-                console.error(e);
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400 font-bold">Terjadi kesalahan koneksi API.</div>';
+            sectionTitle.innerText = "Update Terbaru";
+            const res = await fetchAPI(`/terbaru.php?page=${page}`);
+            if(res && res.result.anime_list) {
+                renderCards(res.result.anime_list, 'terbaru');
+                pagination.classList.remove('hidden');
             }
         }
 
-        async function searchAnime(query) {
-            const grid = document.getElementById('anime-grid');
-            grid.innerHTML = Array(10).fill('<div class="animate-pulse bg-gray-800/40 rounded-2xl aspect-[3/4] border border-gray-800"></div>').join('');
-
-            try {
-                const res = await fetch(`${API_BASE}/search.php?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
-
-                if(!data || !data.status || !data.result || data.result.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400 font-bold">Anime "${query}" tidak ditemukan.</div>`;
-                    return;
-                }
-
-                renderAnime(data.result);
-            } catch(e) { console.error(e); }
+        async function loadSchedule(day) {
+            sectionTitle.innerText = `Jadwal: ${day.toUpperCase()}`;
+            const res = await fetchAPI(`/schedule.php?day=${day}`);
+            if(res && res.result.raw_data) renderCards(res.result.raw_data, 'schedule');
         }
 
-        function renderAnime(list) {
-            const grid = document.getElementById('anime-grid');
-            grid.innerHTML = list.map(anime => {
-                const episodeParam = anime.url ? encodeURIComponent(anime.url) : '';
+        async function searchAnime(query) {
+            sectionTitle.innerText = `Pencarian: "${query}"`;
+            const res = await fetchAPI(`/search.php?q=${encodeURIComponent(query)}`);
+            if(res && res.result.results) renderCards(res.result.results, 'search');
+        }
+
+        function renderCards(items, type) {
+            if(!items.length) {
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Data tidak ditemukan.</p>`; return;
+            }
+            container.innerHTML = items.map((anime, index) => {
+                const img = anime.image || anime.featured_img_src;
+                const href = type === 'terbaru' ? `watch.html?episodeUrl=${encodeURIComponent(anime.url)}` : `detail.html?animeUrl=${encodeURIComponent(anime.url)}`;
+                const delay = index * 50; 
+                
                 return `
-                    <a href="watch.html?episodeUrl=${episodeParam}" class="glass-card rounded-2xl overflow-hidden flex flex-col group transition duration-300">
-                        <div class="relative aspect-[3/4] overflow-hidden bg-gray-900">
-                            <img src="${anime.cover}" alt="${anime.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
-                            <div class="absolute top-2 left-2 bg-purple-600/90 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md">
-                                ${anime.episode || 'Eps ?'}
-                            </div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                <div class="w-10 h-10 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition duration-300 border border-white/50">
-                                    <i class="fa-solid fa-play text-white text-xl ml-1"></i>
+                    <a href="${href}" class="group animate-fade-in" style="animation-delay: ${delay}ms; opacity: 0;">
+                        <div class="glass-card hover-glow rounded-2xl overflow-hidden flex flex-col h-full transition-all duration-300 transform group-hover:-translate-y-2 relative">
+                            <div class="relative aspect-[3/4] overflow-hidden">
+                                <img src="${img}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#1f2937] to-transparent opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                                ${anime.episodes ? `<span class="absolute top-2 right-2 bg-purple-600/90 backdrop-blur text-white text-[10px] font-black px-2 py-1 rounded-md shadow-lg border border-purple-400/50">EP ${anime.episodes}</span>` : ''}
+                                ${anime.score ? `<span class="absolute bottom-2 left-2 bg-yellow-500/90 backdrop-blur text-black text-[11px] font-black px-2 py-1 rounded-md shadow flex items-center"><i class="fa-solid fa-star mr-1"></i>${anime.score}</span>` : ''}
+                                
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                                    <div class="bg-white/20 backdrop-blur-sm w-12 h-12 rounded-full flex items-center justify-center border border-white/50">
+                                        <i class="fa-solid fa-play text-white text-xl ml-1"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3 flex-1 flex flex-col justify-between">
-                            <h3 class="text-sm font-bold text-gray-200 line-clamp-2 group-hover:text-purple-400 transition">${anime.title}</h3>
+                            <div class="p-3 flex-1 flex flex-col justify-between">
+                                <h3 class="text-sm font-bold text-gray-200 line-clamp-2 group-hover:text-purple-400 transition">${anime.title}</h3>
+                            </div>
                         </div>
                     </a>
                 `;
