@@ -309,10 +309,11 @@
 
             // 1. Coba fetch komentar beserta profiles via Foreign Key
             let { data, error } = await supabaseClient
-                .from('comments')
-                .select(`id, content, created_at, user_id, profiles(*)`) 
-                .eq('episode_slug', slug)
-                .order('created_at', { ascending: false });
+    .from('comments')
+    .select(`id, content, created_at, user_id, profiles!user_id(*)`) 
+    .eq('episode_slug', slug)
+    .order('created_at', { ascending: false });
+
 
             // 2. Fallback jika Foreign Key belum tersambung di Supabase GUI
             if (error) {
