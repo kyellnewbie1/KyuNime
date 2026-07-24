@@ -254,55 +254,76 @@
         </div>
     </main>
 
-    <!-- MODAL NOTIFIKASI UPDATE -->
-    <div id="update-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] hidden backdrop-blur-md px-4 transition-all duration-300 opacity-0">
-        <div class="glass-card rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 p-6 sm:p-8 relative animate-modal bg-dark-surface/90">
-            
-            <!-- Close Button -->
-            <button onclick="closeUpdateModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 hover:bg-red-500/80 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg border border-white/10">
-                <i class="fa-solid fa-xmark text-sm"></i>
-            </button>
+<!-- MODAL NOTIFIKASI UPDATE v2.6 -->
+<div id="update-modal" class="fixed inset-0 bg-black/85 flex items-center justify-center z-[200] hidden backdrop-blur-md px-4 transition-all duration-300 opacity-0">
+    <div class="glass-panel rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 p-6 sm:p-8 relative bg-[#080c14]/90">
+        
+        <!-- Close Button -->
+        <button onclick="closeUpdateModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 hover:bg-rose-500/80 w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-lg border border-white/10 group">
+            <i class="fa-solid fa-xmark text-sm group-hover:rotate-90 transition-transform"></i>
+        </button>
 
-            <!-- Modal Header -->
-            <div class="flex items-center gap-4 mb-6 border-b border-white/5 pb-5">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-accent flex items-center justify-center text-white shadow-lg shadow-brand-600/40 border border-white/20 shrink-0">
-                    <i class="fa-solid fa-rocket text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-extrabold text-white">Update v2.5 Online! 🔥</h3>
-                    <p class="text-xs text-brand-400 font-bold uppercase tracking-wider mt-0.5">Patch Notes & Fitur Baru</p>
-                </div>
+        <!-- Modal Header -->
+        <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-accent flex items-center justify-center text-white shadow-lg shadow-brand-600/30 border border-white/20 shrink-0">
+                <i class="fa-solid fa-rocket text-xl animate-pulse"></i>
             </div>
-
-            <!-- Content -->
-            <div class="space-y-3 my-4 max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar text-sm">
-                <div class="bg-black/30 p-3.5 rounded-xl border border-white/5 hover:border-brand-500/30 transition">
-                    <p class="font-bold text-red-400 text-xs mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-droplet text-[10px]"></i> Bingkai Mythic Blood 🩸
-                    </p>
-                    <p class="text-gray-300 text-xs leading-relaxed">Bingkai profil baru dengan aura merah eksklusif telah hadir! Cek di menu Edit Profil.</p>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h3 class="text-xl font-black text-white tracking-tight">Update v2.6 Online!</h3>
+                    <span class="bg-brand-500/20 text-brand-300 border border-brand-500/40 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">NEW</span>
                 </div>
-
-                <div class="bg-black/30 p-3.5 rounded-xl border border-white/5 hover:border-brand-500/30 transition">
-                    <p class="font-bold text-amber-400 text-xs mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-crown text-[10px]"></i> Akses Role Nolep 👑
-                    </p>
-                    <p class="text-gray-300 text-xs leading-relaxed">Pengguna dengan role Nolep sekarang bisa menikmati fitur ganti Bingkai Profil Kustom layaknya Owner!</p>
-                </div>
-
-                <div class="bg-black/30 p-3.5 rounded-xl border border-white/5 hover:border-brand-500/30 transition">
-                    <p class="font-bold text-sky-400 text-xs mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-table-cells-large text-[10px]"></i> UI Bingkai Rapi ✨
-                    </p>
-                    <p class="text-gray-300 text-xs leading-relaxed">Tampilan grid pemilih bingkai diperbarui menjadi 2 kolom simetris agar lebih nyaman dilihat.</p>
-                </div>
+                <p class="text-xs text-brand-400 font-extrabold uppercase tracking-widest mt-0.5">Patch Notes & Optimization</p>
             </div>
-
-            <button onclick="closeUpdateModal()" class="w-full mt-4 py-3.5 bg-gradient-to-r from-brand-600 to-brand-accent hover:opacity-90 text-white font-bold rounded-xl transition-all text-xs tracking-wider uppercase shadow-lg shadow-brand-600/30 transform hover:-translate-y-0.5">
-                Mengerti & Lanjutkan
-            </button>
         </div>
+
+        <!-- Content List -->
+        <div class="space-y-3 my-4 max-h-[48vh] overflow-y-auto pr-1.5 custom-scrollbar text-sm">
+            
+            <!-- Patch Item 1: Optimalisasi UI/UX (Fitur Utama v2.6) -->
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 hover:border-brand-500/40 transition-all shadow-inner group">
+                <p class="font-black text-brand-300 text-xs mb-1 flex items-center gap-2 group-hover:translate-x-0.5 transition-transform">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[11px] text-brand-400"></i> Optimalisasi Visual & UI 2.6 ⚡
+                </p>
+                <p class="text-gray-300 text-xs leading-relaxed font-medium">
+                    Tampilan antarmuka disempurnakan secara menyeluruh dengan konsep <span class="text-white font-semibold">Cyber Dark Glassmorphism</span>. Peningkatan mencakup tata letak elemen yang lebih presisi, transisi modal yang lebih mulus, serta keterbacaan teks yang makin tajam di semua ukuran layar!
+                </p>
+            </div>
+
+            <!-- Patch Item 2 -->
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 hover:border-rose-500/40 transition-all shadow-inner group">
+                <p class="font-black text-rose-400 text-xs mb-1 flex items-center gap-2 group-hover:translate-x-0.5 transition-transform">
+                    <i class="fa-solid fa-droplet text-[11px]"></i> Bingkai Mythic Blood 🩸
+                </p>
+                <p class="text-gray-300 text-xs leading-relaxed font-medium">Bingkai profil baru dengan aura merah eksklusif telah hadir! Cek dan pasang langsung melalui menu Bingkai Profil Kustom.</p>
+            </div>
+
+            <!-- Patch Item 3 -->
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 hover:border-amber-500/40 transition-all shadow-inner group">
+                <p class="font-black text-amber-400 text-xs mb-1 flex items-center gap-2 group-hover:translate-x-0.5 transition-transform">
+                    <i class="fa-solid fa-crown text-[11px]"></i> Akses Role Nolep 👑
+                </p>
+                <p class="text-gray-300 text-xs leading-relaxed font-medium">Pengguna dengan role Nolep sekarang dapat menikmati fitur kustomisasi Bingkai Profil khusus layaknya Breaker & Owner!</p>
+            </div>
+
+            <!-- Patch Item 4 -->
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 hover:border-sky-500/40 transition-all shadow-inner group">
+                <p class="font-black text-sky-400 text-xs mb-1 flex items-center gap-2 group-hover:translate-x-0.5 transition-transform">
+                    <i class="fa-solid fa-table-cells-large text-[11px]"></i> Grid Pemilih Bingkai Rapi ✨
+                </p>
+                <p class="text-gray-300 text-xs leading-relaxed font-medium">Tampilan pemilih bingkai ditata dalam grid 2 kolom simetris yang lebih bersih dan nyaman diakses dari smartphone maupun PC.</p>
+            </div>
+
+        </div>
+
+        <!-- Action Button -->
+        <button onclick="closeUpdateModal()" class="w-full mt-4 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-extrabold rounded-xl transition-all text-xs tracking-wider uppercase shadow-lg shadow-brand-600/30 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+            <span>Mengerti & Lanjutkan</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
     </div>
+</div>
+
 
     <!-- SCRIPTS INTEGRATION -->
     <script src="config.js"></script>
