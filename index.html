@@ -520,5 +520,23 @@
         
         document.addEventListener('DOMContentLoaded', initIndex);
     </script>
+    
+    <!-- FLOATING CHAT BUTTON -->
+<a href="chat.html" 
+   class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-accent hover:opacity-95 text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-lg shadow-brand-600/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95 group">
+    
+    <!-- Icon dengan Efek Pulse -->
+    <div class="relative flex items-center justify-center">
+        <i class="fa-solid fa-comments text-lg sm:text-xl"></i>
+        <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+    </div>
+
+    <!-- Teks (Hanya tampil di layar sedang/besar agar tidak menyempitkan HP) -->
+    <span class="hidden sm:inline text-xs font-black uppercase tracking-wider">KyuChat</span>
+</a>
+
 </body>
 </html>
