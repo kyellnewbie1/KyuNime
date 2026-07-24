@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesan & Obrolan - KyuAnime</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+                            400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+                            800: '#5b21b6', 900: '#4c1d95', accent: '#ec4899',
+                        },
+                        dark: {
+                            bg: '#080c14', surface: '#0f172a', card: '#131b2e', border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome & Supabase SDK -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            background-color: #080c14; 
+            color: #f1f5f9; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed;
+        }
+
+        .glass-nav {
+            background: rgba(8, 12, 20, 0.85); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel { 
+            background: rgba(19, 27, 46, 0.65); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(124, 58, 237, 0.6); }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white h-screen flex flex-col overflow-hidden">
+
+    <!-- NAVBAR -->
+    <nav class="glass-nav sticky top-0 z-50 px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between shrink-0">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="profile.html" class="bg-white/5 hover:bg-white/10 text-gray-300 w-9 h-9 rounded-xl flex items-center justify-center transition border border-white/10">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </a>
+                <a href="index.html" class="text-xl sm:text-2xl font-black text-brand-400 tracking-wider flex items-center gap-1">
+                    Kyu<span class="text-white">Chat</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-xl text-rose-400 text-xs font-bold">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Auto-Delete 10m</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CHAT CONTAINER -->
+    <main class="max-w-7xl mx-auto w-full flex-1 p-2 sm:p-4 md:p-6 overflow-hidden flex gap-4">
+        <div class="glass-panel w-full h-full rounded-3xl flex overflow-hidden border border-white/10">
+            
+            <!-- SIDEBAR: DAFTAR TEMAN -->
+            <div id="chat-sidebar" class="w-full md:w-80 lg:w-96 bg-black/30 border-r border-white/10 flex flex-col shrink-0">
+                <div class="p-4 border-b border-white/5">
+                    <h2 class="text-lg font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-brand-400"></i> Obrolan
+                    </h2>
+                    <p class="text-[11px] text-gray-400 font-medium mt-0.5">Pilih teman untuk memulai percakapan</p>
+                </div>
+
+                <!-- LIST TEMAN -->
+                <div id="friends-chat-list" class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                    <div class="text-center py-10">
+                        <div class="w-6 h-6 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mx-auto"></div>
+                        <p class="text-xs text-gray-400 mt-2">Memuat teman...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AREA OBROLAN CHAT -->
+            <div id="chat-main" class="hidden md:flex flex-1 flex-col bg-dark-bg/40 relative">
+                
+                <!-- HEADER CHAT AKTIF -->
+                <div id="chat-header" class="p-4 border-b border-white/10 bg-black/20 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="backToSidebar()" class="md:hidden text-gray-400 hover:text-white mr-1">
+                            <i class="fa-solid fa-chevron-left text-lg"></i>
+                        </button>
+                        <img id="active-friend-avatar" src="https://via.placeholder.com/150" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                        <div>
+                            <h3 id="active-friend-name" class="text-sm font-black text-white">Pilih Teman</h3>
+                            <p id="active-friend-status" class="text-[10px] text-emerald-400 font-extrabold tracking-wider uppercase">Online</p>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-gray-400 font-semibold bg-black/40 px-3 py-1.5 rounded-xl border border-white/5">
+                        <i class="fa-solid fa-shield-halved text-brand-400 mr-1"></i> Terenkripsi
+                    </div>
+                </div>
+
+                <!-- CHAT MESSAGES BOX -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar flex flex-col">
+                    <div class="m-auto text-center text-gray-500 text-xs font-medium">
+                        <i class="fa-solid fa-paper-plane text-2xl mb-2 text-brand-500/40 block"></i>
+                        Pilih teman dari daftar sebelah kiri untuk memulai obrolan rahasia.
+                    </div>
+                </div>
+
+                <!-- CHAT INPUT BOX -->
+                <form id="chat-form" onsubmit="sendMessage(event)" class="p-3 sm:p-4 border-t border-white/10 bg-black/30 flex items-center gap-2">
+                    <input type="text" id="message-input" placeholder="Tulis pesan..." autocomplete="off" disabled class="flex-1 bg-black/50 text-xs sm:text-sm text-white px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-brand-500 transition font-medium disabled:opacity-50">
+                    <button type="submit" id="btn-send" disabled class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-5 py-3 rounded-xl transition shadow-lg shadow-brand-600/30 disabled:opacity-50 shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- CONFIG -->
+    <script>
+        window.CONFIG = window.CONFIG || {
+            SUPABASE_URL: "URL_SUPABASE_KAMU",
+            SUPABASE_ANON_KEY: "KEY_SUPABASE_KAMU"
+        };
+    </script>
+    <script src="config.js" onerror="console.warn('config.js tidak ditemukan, menggunakan fallback.')"></script>
+
+    <!-- LOGIC SYSTEM SCRIPT -->
+    <script>
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        let currentUser = null;
+        let activeFriend = null;
+        let chatSubscription = null;
+
+        async function initChatSystem() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if (error || !session) return window.location.href = 'auth.html';
+
+            currentUser = session.user;
+            await loadFriendsList();
+
+            // Jalankan pembersihan pesan kadaluarsa (>10 menit) secara periodik setiap 1 menit di sisi browser
+            cleanExpiredMessagesLocally();
+            setInterval(cleanExpiredMessagesLocally, 60000);
+        }
+
+        // MEMUAT DAFTAR TEMAN UNTUK DIPILIH
+        async function loadFriendsList() {
+            const { data, error } = await supabaseClient
+                .from('friends')
+                .select(`
+                    id, status, requester_id, receiver_id,
+                    requester:profiles!friends_requester_id_fkey(id, full_name, user_id, avatar_url),
+                    receiver:profiles!friends_receiver_id_fkey(id, full_name, user_id, avatar_url)
+                `)
+                .eq('status', 'accepted')
+                .or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+            const listEl = document.getElementById('friends-chat-list');
+
+            if (!data || data.length === 0) {
+                listEl.innerHTML = '<div class="text-center py-8 text-xs text-gray-500 font-medium">Belum ada teman terhubung.</div>';
+                return;
+            }
+
+            listEl.innerHTML = data.map(f => {
+                const isRequester = f.requester_id === currentUser.id;
+                const friend = isRequester ? f.receiver : f.requester;
+                if (!friend) return '';
+
+                return `
+                    <div onclick="selectFriend('${friend.id}', '${friend.full_name}', '${friend.avatar_url || 'https://via.placeholder.com/150'}')" 
+                         id="friend-card-${friend.id}"
+                         class="friend-card flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/5 transition border border-transparent hover:border-white/5">
+                        <img src="${friend.avatar_url || 'https://via.placeholder.com/150'}" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                        <div class="flex-1 overflow-hidden">
+                            <h4 class="text-xs font-bold text-white truncate">${friend.full_name || 'Tanpa Nama'}</h4>
+                            <p class="text-[10px] text-gray-400 truncate">Klik untuk membuka obrolan</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PILIH TEMAN CHAT
+        async function selectFriend(friendId, friendName, avatarUrl) {
+            activeFriend = { id: friendId, name: friendName, avatar: avatarUrl };
+
+            // Update UI sidebar aktif
+            document.querySelectorAll('.friend-card').forEach(el => el.classList.remove('bg-brand-600/20', 'border-brand-500/40'));
+            const activeCard = document.getElementById(`friend-card-${friendId}`);
+            if (activeCard) activeCard.classList.add('bg-brand-600/20', 'border-brand-500/40');
+
+            // Responsive Mobile Toggle
+            document.getElementById('chat-sidebar').classList.add('hidden', 'md:flex');
+            document.getElementById('chat-main').classList.remove('hidden');
+            document.getElementById('chat-main').classList.add('flex');
+
+            // Set Header
+            document.getElementById('active-friend-avatar').src = avatarUrl;
+            document.getElementById('active-friend-name').innerText = friendName;
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('btn-send').disabled = false;
+
+            // Load Chat History & Subscribe Realtime
+            await fetchMessages();
+            subscribeToRealtimeChat();
+        }
+
+        function backToSidebar() {
+            document.getElementById('chat-sidebar').classList.remove('hidden');
+            document.getElementById('chat-main').classList.add('hidden');
+        }
+
+        // MEMUAT PESAN
+        async function fetchMessages() {
+            if (!activeFriend) return;
+
+            const tenancyCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+            const { data: messages, error } = await supabaseClient
+                .from('direct_messages')
+                .select('*')
+                .gte('created_at', tenancyCutoff)
+                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeFriend.id}),and(sender_id.eq.${activeFriend.id},receiver_id.eq.${currentUser.id})`)
+                .order('created_at', { ascending: true });
+
+            renderMessages(messages || []);
+        }
+
+        // RENDER PESAN KE UI
+        function renderMessages(messages) {
+            const container = document.getElementById('chat-messages');
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="m-auto text-center text-gray-500 text-xs font-medium">
+                        Pesan di sini akan terhapus otomatis setelah 10 menit. Mulai sapa temanmu!
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isMe = msg.sender_id === currentUser.id;
+                const time = new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} my-1">
+                        <div class="max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm font-medium shadow-md ${
+                            isMe 
+                            ? 'bg-brand-600 text-white rounded-br-none' 
+                            : 'bg-black/50 border border-white/10 text-gray-200 rounded-bl-none'
+                        }">
+                            <p class="break-words leading-relaxed">${escapeHtml(msg.message)}</p>
+                            <span class="block text-[9px] mt-1 text-right opacity-70 font-mono">${time}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // KIRIM PESAN
+        async function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+
+            if (!message || !activeFriend) return;
+
+            input.value = '';
+
+            const { error } = await supabaseClient
+                .from('direct_messages')
+                .insert({
+                    sender_id: currentUser.id,
+                    receiver_id: activeFriend.id,
+                    message: message
+                });
+
+            if (error) {
+                alert("Gagal mengirim pesan: " + error.message);
+            } else {
+                fetchMessages();
+            }
+        }
+
+        // REALTIME SUBSCRIPTION
+        function subscribeToRealtimeChat() {
+            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
+
+            chatSubscription = supabaseClient
+                .channel('public:direct_messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, payload => {
+                    const newMsg = payload.new;
+                    if ((newMsg.sender_id === currentUser.id && newMsg.receiver_id === activeFriend.id) ||
+                        (newMsg.sender_id === activeFriend.id && newMsg.receiver_id === currentUser.id)) {
+                        fetchMessages();
+                    }
+                })
+                .subscribe();
+        }
+
+        // AUTO DELETE PESAN LOKAL KETIKA WAKTU SUDAH MAJU 10 MENIT
+        function cleanExpiredMessagesLocally() {
+            if (activeFriend) {
+                fetchMessages();
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initChatSystem);
+    </script>
+</body>
+</html>
